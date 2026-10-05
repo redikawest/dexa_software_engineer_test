@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { Alert, inputClass, primaryButton } from "~/components/ui";
+import { EMAIL_PATTERN } from "~/lib/validation";
 
 type LoginErrors = {
   email?: string;
@@ -20,7 +21,7 @@ function validate(email: string, password: string): LoginErrors | null {
   const errors: LoginErrors = {};
 
   if (!email) errors.email = "Email is required.";
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Enter a valid email address.";
+  else if (!EMAIL_PATTERN.test(email)) errors.email = "Enter a valid email address.";
 
   if (!password) errors.password = "Password is required.";
 

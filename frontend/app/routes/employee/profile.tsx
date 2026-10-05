@@ -13,13 +13,13 @@ import {
   secondaryButton,
 } from "~/components/ui";
 import { useEmployee } from "~/lib/employee-context";
+import { PHONE_PATTERN, cleanPhone } from "~/lib/validation";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Profile" }];
 }
 
 const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
-const PHONE_PATTERN = /^(\+62|62|0)8\d{8,12}$/;
 
 type Section = "phone" | "password";
 
@@ -99,7 +99,7 @@ export default function Profile() {
 
   function handlePhoneSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const cleaned = phone.replace(/[\s-]/g, "");
+    const cleaned = cleanPhone(phone);
     if (!PHONE_PATTERN.test(cleaned)) {
       setPhoneError("Enter a valid phone number, e.g. 081234567890.");
       return;

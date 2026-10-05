@@ -10,4 +10,9 @@ export default [
     route("summary", "routes/employee/summary.tsx"),
     route("profile", "routes/employee/profile.tsx"),
   ]),
+
+  layout("routes/admin/layout.tsx", [
+    route("admin/employees", "routes/admin/employees.tsx"),
+    route("admin/attendance", "routes/admin/attendance.tsx"),
+  ]),
 ] satisfies RouteConfig;
