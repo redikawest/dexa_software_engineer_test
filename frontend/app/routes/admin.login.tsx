@@ -4,7 +4,7 @@ import type { Route } from "./+types/admin.login";
 import { LoginForm } from "~/components/login-form";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: "Login Admin HRD" }];
+  return [{ title: "HR Admin Login" }];
 }
 
 export default function AdminLogin() {
@@ -17,15 +17,15 @@ export default function AdminLogin() {
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-10">
       <LoginForm
-        title="Monitoring Karyawan"
-        subtitle="Login admin HRD"
-        submitLabel="Login"
+        title="Employee Monitoring"
+        subtitle="HR admin login"
+        submitLabel="Log in"
         onLogin={handleLogin}
         footer={
           <>
-            Bukan admin?{" "}
+            Not an admin?{" "}
             <Link to="/login" className="text-blue-700 hover:underline">
-              Login karyawan
+              Employee login
             </Link>
           </>
         }

@@ -19,10 +19,10 @@ type LoginFormProps = {
 function validate(email: string, password: string): LoginErrors | null {
   const errors: LoginErrors = {};
 
-  if (!email) errors.email = "Email wajib diisi.";
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Format email tidak valid.";
+  if (!email) errors.email = "Email is required.";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Enter a valid email address.";
 
-  if (!password) errors.password = "Password wajib diisi.";
+  if (!password) errors.password = "Password is required.";
 
   return Object.keys(errors).length ? errors : null;
 }
@@ -45,7 +45,7 @@ export function LoginForm({ title, subtitle, submitLabel, onLogin, footer }: Log
     try {
       await onLogin(email.trim(), password);
     } catch (err) {
-      setErrors({ form: err instanceof Error ? err.message : "Login gagal. Coba lagi." });
+      setErrors({ form: err instanceof Error ? err.message : "Login failed. Try again." });
     } finally {
       setSubmitting(false);
     }
@@ -97,12 +97,12 @@ export function LoginForm({ title, subtitle, submitLabel, onLogin, footer }: Log
               checked={showPassword}
               onChange={(e) => setShowPassword(e.target.checked)}
             />
-            Tampilkan password
+            Show password
           </label>
         </div>
 
         <button type="submit" disabled={submitting} className={`${primaryButton} w-full`}>
-          {submitting ? "Memproses..." : submitLabel}
+          {submitting ? "Logging in..." : submitLabel}
         </button>
       </form>
 
