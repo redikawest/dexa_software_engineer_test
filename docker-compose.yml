@@ -1,0 +1,74 @@
+name: dexa
+
+services:
+  api-gateway:
+    build:
+      context: ./backend
+      args:
+        SERVICE: api-gateway
+    container_name: dexa-api-gateway
+    restart: unless-stopped
+    environment:
+      GATEWAY_PORT: 3000
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  auth-service:
+    build:
+      context: ./backend
+      args:
+        SERVICE: auth-service
+    container_name: dexa-auth-service
+    restart: unless-stopped
+    environment:
+      AUTH_SERVICE_PORT: 3001
+    ports:
+      - "3001:3001"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3001').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  employee-service:
+    build:
+      context: ./backend
+      args:
+        SERVICE: employee-service
+    container_name: dexa-employee-service
+    restart: unless-stopped
+    environment:
+      EMPLOYEE_SERVICE_PORT: 3002
+    ports:
+      - "3002:3002"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3002').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  attendance-service:
+    build:
+      context: ./backend
+      args:
+        SERVICE: attendance-service
+    container_name: dexa-attendance-service
+    restart: unless-stopped
+    environment:
+      ATTENDANCE_SERVICE_PORT: 3003
+    ports:
+      - "3003:3003"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3003').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s

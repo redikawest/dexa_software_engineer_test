@@ -21,7 +21,15 @@
     "types": [
       "vitest/globals",
       "node"
-    ]
+    ],
+    "paths": {
+      "@app/config": [
+        "./libs/config/src/index.ts"
+      ],
+      "@app/config/*": [
+        "./libs/config/src/*"
+      ]
+    }
   },
   "files": [],
   "references": [
@@ -33,6 +41,9 @@
     },
     {
       "path": "./apps/auth-service/tsconfig.app.json"
+    },
+    {
+      "path": "./apps/employee-service/tsconfig.app.json"
     }
   ]
 }
