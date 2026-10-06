@@ -9,4 +9,9 @@ export class EmployeeServiceController {
   getHello(): string {
     return this.employeeServiceService.getHello();
   }
+
+  @Get('employee/me')
+  getMe() {
+    return this.employeeServiceService.getMe();
+  }
 }

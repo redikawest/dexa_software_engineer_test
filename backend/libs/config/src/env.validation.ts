@@ -4,6 +4,8 @@ export interface Env {
   AUTH_SERVICE_PORT: number;
   EMPLOYEE_SERVICE_PORT: number;
   ATTENDANCE_SERVICE_PORT: number;
+  AUTH_SERVICE_URL: string;
+  EMPLOYEE_SERVICE_URL: string;
 }
 
 type RawEnv = Record<string, unknown>;
@@ -31,6 +33,16 @@ function readPort(raw: RawEnv, key: string, errors: string[], fallback?: number)
   return port;
 }
 
+function readUrl(raw: RawEnv, key: string, errors: string[], fallback: string): string {
+  const value = readString(raw, key, errors, fallback);
+  try {
+    new URL(value);
+  } catch {
+    errors.push(`${key} must be a valid URL (got "${value}")`);
+  }
+  return value.replace(/\/+$/, '');
+}
+
 export function validateEnv(raw: RawEnv): Env {
   const errors: string[] = [];
 
@@ -46,6 +58,9 @@ export function validateEnv(raw: RawEnv): Env {
     AUTH_SERVICE_PORT: readPort(raw, 'AUTH_SERVICE_PORT', errors, 3001),
     EMPLOYEE_SERVICE_PORT: readPort(raw, 'EMPLOYEE_SERVICE_PORT', errors, 3002),
     ATTENDANCE_SERVICE_PORT: readPort(raw, 'ATTENDANCE_SERVICE_PORT', errors, 3003),
+
+    AUTH_SERVICE_URL: readUrl(raw, 'AUTH_SERVICE_URL', errors, 'http://localhost:3001'),
+    EMPLOYEE_SERVICE_URL: readUrl(raw, 'EMPLOYEE_SERVICE_URL', errors, 'http://localhost:3002'),
   };
 
   if (errors.length > 0) {
