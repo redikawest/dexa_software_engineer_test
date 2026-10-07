@@ -14,6 +14,13 @@ ARG SERVICE
 RUN test -n "$SERVICE" || (echo "Missing build argument: --build-arg SERVICE=<service name>" && false)
 RUN npx nest build "$SERVICE"
 
+FROM node:${NODE_VERSION}-slim AS migrate
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+CMD ["npm", "run", "migration:run"]
+
 FROM node:${NODE_VERSION}-slim AS runtime
 ARG SERVICE
 ENV NODE_ENV=production

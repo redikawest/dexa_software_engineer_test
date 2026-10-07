@@ -1,6 +1,40 @@
 name: dexa
 
 services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: dexa-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dexa}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dexa_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-dexa_main}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  migrate:
+    build:
+      context: ./backend
+      target: migrate
+    container_name: dexa-migrate
+    restart: "no"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:-dexa}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-dexa_dev_password}
+      DB_NAME: ${POSTGRES_DB:-dexa_main}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   api-gateway:
     build:
       context: ./backend
@@ -35,6 +69,14 @@ services:
     restart: unless-stopped
     environment:
       AUTH_SERVICE_PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:-dexa}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-dexa_dev_password}
+      DB_NAME: ${POSTGRES_DB:-dexa_main}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
     ports:
       - "3001:3001"
     healthcheck:
@@ -53,6 +95,14 @@ services:
     restart: unless-stopped
     environment:
       EMPLOYEE_SERVICE_PORT: 3002
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:-dexa}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-dexa_dev_password}
+      DB_NAME: ${POSTGRES_DB:-dexa_main}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
     ports:
       - "3002:3002"
     healthcheck:
@@ -79,3 +129,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+volumes:
+  postgres_data:

@@ -14,6 +14,12 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/apps/backend/main",
+    "seed": "TSX_TSCONFIG_PATH=./database/tsconfig.json node --env-file-if-exists=.env --import tsx database/seeds/run-seed.ts",
+    "migration:run": "TSX_TSCONFIG_PATH=./database/tsconfig.json node --env-file-if-exists=.env --import tsx ./node_modules/typeorm/cli.js migration:run -d database/data-source.ts",
+    "migration:revert": "TSX_TSCONFIG_PATH=./database/tsconfig.json node --env-file-if-exists=.env --import tsx ./node_modules/typeorm/cli.js migration:revert -d database/data-source.ts",
+    "migration:show": "TSX_TSCONFIG_PATH=./database/tsconfig.json node --env-file-if-exists=.env --import tsx ./node_modules/typeorm/cli.js migration:show -d database/data-source.ts",
+    "migration:generate": "TSX_TSCONFIG_PATH=./database/tsconfig.json node --env-file-if-exists=.env --import tsx ./node_modules/typeorm/cli.js migration:generate -d database/data-source.ts",
+    "migration:create": "node ./node_modules/typeorm/cli.js migration:create",
     "lint": "oxlint --type-aware apps/",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -26,9 +32,13 @@
     "@nestjs/config": "^12.0.1",
     "@nestjs/core": "^12.0.1",
     "@nestjs/platform-express": "^12.0.1",
+    "@nestjs/typeorm": "^12.0.2",
     "axios": "^1.20.0",
+    "bcryptjs": "^3.0.3",
+    "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "typeorm": "^1.1.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^12.0.0",
@@ -48,6 +58,7 @@
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
     "tsconfig-paths-webpack-plugin": "^4.2.0",
+    "tsx": "^4.23.15",
     "typescript": "^6.0.2",
     "vitest": "^5.0.0",
     "webpack-node-externals": "^3.0.0"

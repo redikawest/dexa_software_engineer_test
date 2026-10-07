@@ -69,5 +69,6 @@ export function validateEnv(raw: RawEnv): Env {
         'Copy backend/.env.example to backend/.env and adjust the values.',
     );
   }
-  return env;
+  
+  return { ...raw, ...env } as Env;
 }
