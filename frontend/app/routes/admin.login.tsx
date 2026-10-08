@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 
 import type { Route } from "./+types/admin.login";
 import { LoginForm } from "~/components/login-form";
@@ -17,6 +17,8 @@ export function meta({}: Route.MetaArgs) {
 
 export default function AdminLogin() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const notice = params.has("expired") ? "Your session has expired. Please log in again." : undefined;
 
   const handleLogin = async (email: string, password: string) => {
     const session = await login(email, password);
@@ -36,6 +38,7 @@ export default function AdminLogin() {
         subtitle="HR admin login"
         submitLabel="Log in"
         onLogin={handleLogin}
+        notice={notice}
         footer={
           <>
             Not an admin?{" "}

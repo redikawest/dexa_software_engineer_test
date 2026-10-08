@@ -14,6 +14,7 @@ type LoginFormProps = {
   subtitle: string;
   submitLabel: string;
   onLogin: (email: string, password: string) => Promise<void>;
+  notice?: string;
   footer?: React.ReactNode;
 };
 
@@ -28,7 +29,7 @@ function validate(email: string, password: string): LoginErrors | null {
   return Object.keys(errors).length ? errors : null;
 }
 
-export function LoginForm({ title, subtitle, submitLabel, onLogin, footer }: LoginFormProps) {
+export function LoginForm({ title, subtitle, submitLabel, onLogin, notice, footer }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -60,6 +61,7 @@ export function LoginForm({ title, subtitle, submitLabel, onLogin, footer }: Log
       </div>
 
       <form onSubmit={handleSubmit} noValidate className="space-y-4 px-6 py-5">
+        {notice && !errors.form && <Alert kind="info">{notice}</Alert>}
         {errors.form && <Alert kind="error">{errors.form}</Alert>}
 
         <div>

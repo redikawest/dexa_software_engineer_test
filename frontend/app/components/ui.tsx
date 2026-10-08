@@ -84,13 +84,14 @@ export function Alert({
   kind,
   children,
 }: {
-  kind: "error" | "success";
+  kind: "error" | "success" | "info";
   children: React.ReactNode;
 }) {
-  const style =
-    kind === "error"
-      ? "border-red-200 bg-red-50 text-red-700"
-      : "border-green-200 bg-green-50 text-green-700";
+  const style = {
+    error: "border-red-200 bg-red-50 text-red-700",
+    success: "border-green-200 bg-green-50 text-green-700",
+    info: "border-blue-200 bg-blue-50 text-blue-700",
+  }[kind];
   return (
     <div
       role={kind === "error" ? "alert" : "status"}

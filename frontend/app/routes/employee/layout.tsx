@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Outlet } from "react-router";
+import { Outlet, useLoaderData } from "react-router";
 
 import { AppShell, type NavItem } from "~/components/app-shell";
-import { dummyEmployee } from "~/lib/dummy-data";
+import { getMe } from "~/lib/employee";
 import type { EmployeeContext } from "~/lib/employee-context";
-import { requireRole } from "~/lib/guards";
+import { loadWithSession } from "~/lib/guards";
 import { clearSession } from "~/lib/session";
 
 const navItems: NavItem[] = [
@@ -27,8 +27,8 @@ const navItems: NavItem[] = [
   },
 ];
 
-export function clientLoader() {
-  return requireRole("EMPLOYEE");
+export async function clientLoader() {
+  return { employee: await loadWithSession("EMPLOYEE", getMe) };
 }
 clientLoader.hydrate = true as const;
 
@@ -36,8 +36,23 @@ export function HydrateFallback() {
   return <p className="p-6 text-center text-sm text-gray-500">Loading...</p>;
 }
 
+export function ErrorBoundary({ error }: { error: unknown }) {
+  return (
+    <main className="mx-auto max-w-sm p-6 text-center">
+      <h1 className="text-lg font-semibold">Could not load your page</h1>
+      <p className="mt-2 text-sm text-gray-600">
+        {error instanceof Error ? error.message : "An unexpected error occurred."}
+      </p>
+      <a href="/attendance" className="mt-4 inline-block text-sm text-blue-700 hover:underline">
+        Try again
+      </a>
+    </main>
+  );
+}
+
 export default function EmployeeLayout() {
-  const [employee, setEmployee] = useState(dummyEmployee);
+  const { employee: loaded } = useLoaderData<typeof clientLoader>();
+  const [employee, setEmployee] = useState(loaded);
 
   return (
     <AppShell

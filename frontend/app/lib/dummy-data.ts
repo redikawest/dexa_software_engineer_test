@@ -1,14 +1,8 @@
 // Temporary dummy data, to be replaced with data from the REST API.
 import { monthStartISO, todayISO } from "./date";
 
-export type Employee = {
-  id: string;
-  name: string;
-  email: string;
-  position: string;
-  phone: string;
-  photoUrl: string | null;
-};
+import type { Employee } from "./employee";
+export type { Employee };
 
 export type AttendanceRecord = {
   date: string; // YYYY-MM-DD
