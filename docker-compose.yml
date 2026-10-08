@@ -46,6 +46,7 @@ services:
       GATEWAY_PORT: 3000
       AUTH_SERVICE_URL: http://auth-service:3001
       EMPLOYEE_SERVICE_URL: http://employee-service:3002
+      ATTENDANCE_SERVICE_URL: http://attendance-service:3003
       JWT_PUBLIC_KEY_PATH: /run/secrets/jwt-public.pem
     volumes:
       - ./backend/keys/jwt-public.pem:/run/secrets/jwt-public.pem:ro
@@ -53,6 +54,8 @@ services:
       auth-service:
         condition: service_healthy
       employee-service:
+        condition: service_healthy
+      attendance-service:
         condition: service_healthy
     ports:
       - "3000:3000"
@@ -124,6 +127,14 @@ services:
     restart: unless-stopped
     environment:
       ATTENDANCE_SERVICE_PORT: 3003
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:-dexa}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-dexa_dev_password}
+      DB_NAME: ${POSTGRES_DB:-dexa_main}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3003').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""]
       interval: 10s

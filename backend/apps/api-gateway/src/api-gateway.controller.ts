@@ -24,4 +24,14 @@ export class ApiGatewayController {
   getEmployeeMe(@CurrentUser() user: AuthUser) {
     return this.apiGatewayService.getEmployeeMe(user);
   }
+
+  @Post('attendance/clock-in')
+  clockIn(@CurrentUser() user: AuthUser) {
+    return this.apiGatewayService.clockIn(user);
+  }
+
+  @Post('attendance/clock-out')
+  clockOut(@CurrentUser() user: AuthUser) {
+    return this.apiGatewayService.clockOut(user);
+  }
 }

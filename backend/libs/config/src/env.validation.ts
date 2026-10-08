@@ -6,6 +6,7 @@ export interface Env {
   ATTENDANCE_SERVICE_PORT: number;
   AUTH_SERVICE_URL: string;
   EMPLOYEE_SERVICE_URL: string;
+  ATTENDANCE_SERVICE_URL: string;
 }
 
 type RawEnv = Record<string, unknown>;
@@ -61,6 +62,7 @@ export function validateEnv(raw: RawEnv): Env {
 
     AUTH_SERVICE_URL: readUrl(raw, 'AUTH_SERVICE_URL', errors, 'http://localhost:3001'),
     EMPLOYEE_SERVICE_URL: readUrl(raw, 'EMPLOYEE_SERVICE_URL', errors, 'http://localhost:3002'),
+    ATTENDANCE_SERVICE_URL: readUrl(raw, 'ATTENDANCE_SERVICE_URL', errors, 'http://localhost:3003'),
   };
 
   if (errors.length > 0) {
