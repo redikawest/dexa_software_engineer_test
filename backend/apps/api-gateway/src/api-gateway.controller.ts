@@ -20,6 +20,11 @@ export class ApiGatewayController {
     return this.apiGatewayService.login(body);
   }
 
+  @Patch('auth/password')
+  changePassword(@CurrentUser() user: AuthUser, @Body() body: unknown) {
+    return this.apiGatewayService.changePassword(user, body);
+  }
+
   @Get('employee/me')
   getEmployeeMe(@CurrentUser() user: AuthUser) {
     return this.apiGatewayService.getEmployeeMe(user);

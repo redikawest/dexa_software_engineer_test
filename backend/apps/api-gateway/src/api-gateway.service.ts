@@ -33,6 +33,12 @@ export class ApiGatewayService {
     return this.forward('Auth', () => this.authClient.post('/auth/login', body ?? {}));
   }
 
+  changePassword(user: AuthUser, body: unknown) {
+    return this.forward('Auth', () =>
+      this.authClient.patch('/auth/password', body ?? {}, { headers: this.identityHeaders(user) }),
+    );
+  }
+
   getEmployeeMe(user: AuthUser) {
     return this.forward('Employee', () =>
       this.employeeClient.get('/employee/me', { headers: this.identityHeaders(user) }),
