@@ -51,6 +51,12 @@ export class ApiGatewayService {
     );
   }
 
+  listEmployees(user: AuthUser, query: { page?: string; pageSize?: string; search?: string }) {
+    return this.forward('Employee', () =>
+      this.employeeClient.get('/employees', { headers: this.identityHeaders(user), params: query }),
+    );
+  }
+
   getAttendanceToday(user: AuthUser) {
     return this.forward('Attendance', () =>
       this.attendanceClient.get('/attendance/today', { headers: this.identityHeaders(user) }),

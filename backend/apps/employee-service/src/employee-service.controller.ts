@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Query } from '@nestjs/common';
 import { CallerId } from '@app/config';
+import { parseEmployeeListQuery } from './employee-list-query.js';
 import { parseProfileUpdate } from './profile-update.js';
 import { EmployeeServiceService } from './employee-service.service.js';
 
@@ -20,5 +21,10 @@ export class EmployeeServiceController {
   @Patch('employee/me')
   updateMe(@CallerId() id: string, @Body() body: unknown) {
     return this.employeeServiceService.updateMe(id, parseProfileUpdate(body));
+  }
+
+  @Get('employees')
+  list(@Query('page') page?: string, @Query('pageSize') pageSize?: string, @Query('search') search?: string) {
+    return this.employeeServiceService.list(parseEmployeeListQuery(page, pageSize, search));
   }
 }

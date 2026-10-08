@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
+import type { EmployeeListQuery } from './employee-list-query.js';
 import { Employee } from './employee.entity.js';
 import type { ProfileUpdate } from './profile-update.js';
 
@@ -20,6 +21,34 @@ export class EmployeeServiceService {
     const employee = await this.findOrFail(id);
     Object.assign(employee, update);
     return toProfile(await this.employees.save(employee));
+  }
+
+  async list({ page, pageSize, search }: EmployeeListQuery) {
+    const pattern = search ? `%${search.replace(/[\\%_]/g, '\\$&')}%` : null;
+    const where = pattern ? [{ fullName: ILike(pattern) }, { email: ILike(pattern) }] : undefined;
+
+    const [rows, total] = await this.employees.findAndCount({
+      where,
+      order: { fullName: 'ASC', id: 'ASC' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
+
+    return {
+      items: rows.map((employee) => ({
+        id: employee.id,
+        name: employee.fullName,
+        email: employee.email,
+        position: employee.position,
+        phone: employee.phone,
+        photoUrl: employee.photoUrl,
+        isActive: employee.isActive,
+        createdAt: employee.createdAt,
+      })),
+      page,
+      pageSize,
+      total,
+    };
   }
 
   private async findOrFail(id: string) {

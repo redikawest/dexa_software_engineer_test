@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpCode, Patch, Post, Query } from '@nestjs/common';
 import { ApiGatewayService } from './api-gateway.service.js';
 import { CurrentUser, type AuthUser } from './auth/auth-user.js';
-import { Public } from './auth/decorators.js';
+import { Public, Roles } from './auth/decorators.js';
 
 @Controller()
 export class ApiGatewayController {
@@ -33,6 +33,17 @@ export class ApiGatewayController {
   @Patch('employee/me')
   updateEmployeeMe(@CurrentUser() user: AuthUser, @Body() body: unknown) {
     return this.apiGatewayService.updateEmployeeMe(user, body);
+  }
+
+  @Roles('HR_ADMIN')
+  @Get('admin/employees')
+  listEmployees(
+    @CurrentUser() user: AuthUser,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.apiGatewayService.listEmployees(user, { page, pageSize, search });
   }
 
   @Get('attendance/today')
