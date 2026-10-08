@@ -51,6 +51,17 @@ export class EmployeeServiceService {
     };
   }
 
+  async getById(id: string) {
+    const employee = await this.findOrFail(id);
+    return {
+      ...toProfile(employee),
+      isActive: employee.isActive,
+      createdBy: employee.createdBy,
+      createdAt: employee.createdAt,
+      updatedAt: employee.updatedAt,
+    };
+  }
+
   private async findOrFail(id: string) {
     const employee = await this.employees.findOne({ where: { id } });
     if (!employee) throw new NotFoundException('Employee not found');
