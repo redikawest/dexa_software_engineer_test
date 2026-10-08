@@ -2,6 +2,8 @@ import { Link, useNavigate } from "react-router";
 
 import type { Route } from "./+types/admin.login";
 import { LoginForm } from "~/components/login-form";
+import { login } from "~/lib/auth";
+import { saveSession } from "~/lib/session";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "HR Admin Login" }];
@@ -11,6 +13,13 @@ export default function AdminLogin() {
   const navigate = useNavigate();
 
   const handleLogin = async (email: string, password: string) => {
+    const session = await login(email, password);
+
+    if (session.user.role !== "HR_ADMIN") {
+      throw new Error("This account is not an HR admin. Use the employee login instead.");
+    }
+
+    saveSession(session);
     navigate("/admin/employees");
   }
 

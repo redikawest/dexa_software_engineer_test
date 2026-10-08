@@ -7,6 +7,7 @@ export interface Env {
   AUTH_SERVICE_URL: string;
   EMPLOYEE_SERVICE_URL: string;
   ATTENDANCE_SERVICE_URL: string;
+  CORS_ORIGINS: string[];
 }
 
 type RawEnv = Record<string, unknown>;
@@ -44,6 +45,22 @@ function readUrl(raw: RawEnv, key: string, errors: string[], fallback: string): 
   return value.replace(/\/+$/, '');
 }
 
+function readOrigins(raw: RawEnv, key: string, errors: string[], fallback: string): string[] {
+  const origins = readString(raw, key, errors, fallback)
+    .split(',')
+    .map((origin) => origin.trim().replace(/\/+$/, ''))
+    .filter(Boolean);
+  for (const origin of origins) {
+    try {
+      const url = new URL(origin);
+      if (url.origin !== origin) throw new Error();
+    } catch {
+      errors.push(`${key} must list origins like http://localhost:5173, without a path or "*" (got "${origin}")`);
+    }
+  }
+  return origins;
+}
+
 export function validateEnv(raw: RawEnv): Env {
   const errors: string[] = [];
 
@@ -63,6 +80,7 @@ export function validateEnv(raw: RawEnv): Env {
     AUTH_SERVICE_URL: readUrl(raw, 'AUTH_SERVICE_URL', errors, 'http://localhost:3001'),
     EMPLOYEE_SERVICE_URL: readUrl(raw, 'EMPLOYEE_SERVICE_URL', errors, 'http://localhost:3002'),
     ATTENDANCE_SERVICE_URL: readUrl(raw, 'ATTENDANCE_SERVICE_URL', errors, 'http://localhost:3003'),
+    CORS_ORIGINS: readOrigins(raw, 'CORS_ORIGINS', errors, 'http://localhost:5173'),
   };
 
   if (errors.length > 0) {

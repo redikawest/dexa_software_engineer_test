@@ -47,6 +47,7 @@ services:
       AUTH_SERVICE_URL: http://auth-service:3001
       EMPLOYEE_SERVICE_URL: http://employee-service:3002
       ATTENDANCE_SERVICE_URL: http://attendance-service:3003
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
       JWT_PUBLIC_KEY_PATH: /run/secrets/jwt-public.pem
     volumes:
       - ./backend/keys/jwt-public.pem:/run/secrets/jwt-public.pem:ro
