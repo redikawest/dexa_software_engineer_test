@@ -1,13 +1,29 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
+import { randomUUID } from 'node:crypto';
+import { ILike, QueryFailedError, Repository } from 'typeorm';
+import { AuthClient } from './auth-client.js';
 import type { EmployeeListQuery } from './employee-list-query.js';
 import { Employee } from './employee.entity.js';
+import type { NewEmployee } from './new-employee.js';
 import type { ProfileUpdate } from './profile-update.js';
+
+const UNIQUE_VIOLATION = '23505';
 
 @Injectable()
 export class EmployeeServiceService {
-  constructor(@InjectRepository(Employee) private readonly employees: Repository<Employee>) {}
+  private readonly logger = new Logger(EmployeeServiceService.name);
+
+  constructor(
+    @InjectRepository(Employee) private readonly employees: Repository<Employee>,
+    private readonly auth: AuthClient,
+  ) {}
 
   getHello(): string {
     return 'Hello World From Employee Service!';
@@ -60,6 +76,42 @@ export class EmployeeServiceService {
       createdAt: employee.createdAt,
       updatedAt: employee.updatedAt,
     };
+  }
+
+  async create(adminId: string, input: NewEmployee) {
+    const { password, ...profile } = input;
+    const id = randomUUID();
+
+    try {
+      await this.employees.insert({ id, ...profile, createdBy: adminId });
+    } catch (error) {
+      if (error instanceof QueryFailedError && (error.driverError as { code?: string }).code === UNIQUE_VIOLATION) {
+        throw new ConflictException('An employee with this email already exists');
+      }
+      throw error;
+    }
+
+    const login = await this.auth.createLogin({ id, email: profile.email, password });
+    if (login.ok) return this.getById(id);
+
+    await this.undoCreate(id);
+    if (login.reason === 'conflict') {
+      throw new ConflictException('A login account with this email already exists');
+    }
+    throw new ServiceUnavailableException('The login account could not be created. Nothing was saved, try again.');
+  }
+
+  private async undoCreate(id: string) {
+    const loginRemoved = await this.auth.deleteLogin(id);
+    const profileRemoved = await this.employees.delete({ id }).then(
+      () => true,
+      () => false,
+    );
+    if (!loginRemoved || !profileRemoved) {
+      this.logger.error(
+        `Could not fully undo adding employee ${id} (login removed: ${loginRemoved}, profile removed: ${profileRemoved}). Clean it up by hand.`,
+      );
+    }
   }
 
   private async findOrFail(id: string) {

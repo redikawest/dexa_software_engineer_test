@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigModule, readDatabaseConfig, toPostgresConnection } from '@app/config';
+import { AuthClient } from './auth-client.js';
 import { Employee } from './employee.entity.js';
 import { EmployeeServiceController } from './employee-service.controller.js';
 import { EmployeeServiceService } from './employee-service.service.js';
@@ -26,6 +27,6 @@ import { EmployeeServiceService } from './employee-service.service.js';
     TypeOrmModule.forFeature([Employee]),
   ],
   controllers: [EmployeeServiceController],
-  providers: [EmployeeServiceService],
+  providers: [EmployeeServiceService, AuthClient],
 })
 export class EmployeeServiceModule {}

@@ -47,6 +47,12 @@ export class ApiGatewayController {
   }
 
   @Roles('HR_ADMIN')
+  @Post('admin/employees')
+  createEmployee(@CurrentUser() user: AuthUser, @Body() body: unknown) {
+    return this.apiGatewayService.createEmployee(user, body);
+  }
+
+  @Roles('HR_ADMIN')
   @Get('admin/employees/:id')
   getEmployee(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.apiGatewayService.getEmployee(user, id);

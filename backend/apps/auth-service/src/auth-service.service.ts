@@ -1,15 +1,17 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { compare, hash, hashSync } from 'bcryptjs';
 import { readJwtSigningConfig } from '@app/config';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
+import type { CreateLoginInput } from './create-login.js';
 import { EmployeeLogin } from './employee-login.entity.js';
 
 const MAX_PASSWORD_LENGTH = 72;
 const MIN_NEW_PASSWORD_LENGTH = 8;
 const BCRYPT_COST = 10;
+const UNIQUE_VIOLATION = '23505';
 const TIMING_HASH = hashSync('timing-equalizer', 10);
 
 const invalidLogin = () => new UnauthorizedException('Invalid email or password');
@@ -83,4 +85,34 @@ export class AuthServiceService {
 
     return { message: 'Password changed' };
   }
+
+  async createLogin({ id, email, password }: CreateLoginInput) {
+    const login = this.logins.create({
+      id,
+      email,
+      passwordHash: await hash(password, BCRYPT_COST),
+      role: 'EMPLOYEE',
+      isActive: true,
+    });
+
+    try {
+      await this.logins.insert(login);
+      return { created: true, login: toLoginView(login) };
+    } catch (error) {
+      if (!(error instanceof QueryFailedError) || (error.driverError as { code?: string }).code !== UNIQUE_VIOLATION) {
+        throw error;
+      }
+      const existing = await this.logins.findOne({ where: { id } });
+      if (existing && existing.email === email) return { created: false, login: toLoginView(existing) };
+      throw new ConflictException('An account with this id or email already exists');
+    }
+  }
+
+  async deleteLogin(id: string) {
+    await this.logins.delete({ id });
+  }
+}
+
+function toLoginView(login: EmployeeLogin) {
+  return { id: login.id, email: login.email, role: login.role, isActive: login.isActive };
 }

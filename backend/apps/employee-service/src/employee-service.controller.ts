@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { CallerId } from '@app/config';
+import { parseNewEmployee } from './new-employee.js';
 import { parseEmployeeListQuery } from './employee-list-query.js';
 import { parseProfileUpdate } from './profile-update.js';
 import { EmployeeServiceService } from './employee-service.service.js';
@@ -26,6 +27,11 @@ export class EmployeeServiceController {
   @Get('employees')
   list(@Query('page') page?: string, @Query('pageSize') pageSize?: string, @Query('search') search?: string) {
     return this.employeeServiceService.list(parseEmployeeListQuery(page, pageSize, search));
+  }
+
+  @Post('employees')
+  create(@CallerId() adminId: string, @Body() body: unknown) {
+    return this.employeeServiceService.create(adminId, parseNewEmployee(body));
   }
 
   @Get('employees/:id')

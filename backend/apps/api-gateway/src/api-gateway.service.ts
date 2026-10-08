@@ -57,6 +57,12 @@ export class ApiGatewayService {
     );
   }
 
+  createEmployee(user: AuthUser, body: unknown) {
+    return this.forward('Employee', () =>
+      this.employeeClient.post('/employees', body ?? {}, { headers: this.identityHeaders(user) }),
+    );
+  }
+
   getEmployee(user: AuthUser, id: string) {
     return this.forward('Employee', () =>
       this.employeeClient.get(`/employees/${encodeURIComponent(id)}`, { headers: this.identityHeaders(user) }),
