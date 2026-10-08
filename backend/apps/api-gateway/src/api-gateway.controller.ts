@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Patch, Post, Query } from '@nestjs/common';
 import { ApiGatewayService } from './api-gateway.service.js';
 import { CurrentUser, type AuthUser } from './auth/auth-user.js';
 import { Public } from './auth/decorators.js';
@@ -23,6 +23,16 @@ export class ApiGatewayController {
   @Get('employee/me')
   getEmployeeMe(@CurrentUser() user: AuthUser) {
     return this.apiGatewayService.getEmployeeMe(user);
+  }
+
+  @Get('attendance/today')
+  getAttendanceToday(@CurrentUser() user: AuthUser) {
+    return this.apiGatewayService.getAttendanceToday(user);
+  }
+
+  @Get('attendance/summary')
+  getAttendanceSummary(@CurrentUser() user: AuthUser, @Query('from') from?: string, @Query('to') to?: string) {
+    return this.apiGatewayService.getAttendanceSummary(user, from, to);
   }
 
   @Post('attendance/clock-in')

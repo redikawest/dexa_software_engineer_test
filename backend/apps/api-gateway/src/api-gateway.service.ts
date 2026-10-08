@@ -39,6 +39,21 @@ export class ApiGatewayService {
     );
   }
 
+  getAttendanceToday(user: AuthUser) {
+    return this.forward('Attendance', () =>
+      this.attendanceClient.get('/attendance/today', { headers: this.identityHeaders(user) }),
+    );
+  }
+
+  getAttendanceSummary(user: AuthUser, from?: string, to?: string) {
+    return this.forward('Attendance', () =>
+      this.attendanceClient.get('/attendance/summary', {
+        headers: this.identityHeaders(user),
+        params: { from, to },
+      }),
+    );
+  }
+
   clockIn(user: AuthUser) {
     return this.forward('Attendance', () =>
       this.attendanceClient.post('/attendance/clock-in', undefined, { headers: this.identityHeaders(user) }),

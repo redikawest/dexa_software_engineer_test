@@ -1,8 +1,9 @@
 import { ConflictException, Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'node:crypto';
-import { QueryFailedError, Repository } from 'typeorm';
+import { Between, QueryFailedError, Repository } from 'typeorm';
 import { AttendanceRecord, type AttendanceType } from './attendance-record.entity.js';
+import type { DateRange } from './date-range.js';
 import { toWorkDate } from './work-date.js';
 
 const UNIQUE_VIOLATION = '23505';
@@ -29,6 +30,53 @@ export class AttendanceServiceService {
     if (!clockedIn) throw new UnprocessableEntityException('You have not clocked in today');
 
     return this.record(employeeId, 'CLOCK_OUT', 'You have already clocked out today', recordedAt);
+  }
+
+  async getToday(employeeId: string) {
+    const workDate = toWorkDate(new Date());
+    const records = await this.records.findBy({ employeeId, workDate });
+
+    const clockIn = records.find((r) => r.type === 'CLOCK_IN')?.recordedAt ?? null;
+    const clockOut = records.find((r) => r.type === 'CLOCK_OUT')?.recordedAt ?? null;
+
+    const status = !clockIn ? 'NOT_STARTED' : !clockOut ? 'WORKING' : 'DONE';
+
+    return { workDate, status, clockIn, clockOut };
+  }
+
+  async getSummary(employeeId: string, { from, to }: DateRange) {
+    const records = await this.records.find({
+      where: { employeeId, workDate: Between(from, to) },
+      order: { workDate: 'DESC' },
+    });
+
+    const byDay = new Map<string, { workDate: string; clockIn: Date | null; clockOut: Date | null }>();
+    for (const record of records) {
+      const day = byDay.get(record.workDate) ?? { workDate: record.workDate, clockIn: null, clockOut: null };
+      if (record.type === 'CLOCK_IN') day.clockIn = record.recordedAt;
+      else day.clockOut = record.recordedAt;
+      byDay.set(record.workDate, day);
+    }
+
+    const days = [...byDay.values()].map((day) => ({
+      ...day,
+      workedMinutes:
+        day.clockIn && day.clockOut ? Math.floor((day.clockOut.getTime() - day.clockIn.getTime()) / 60_000) : null,
+    }));
+
+    const completed = days.filter((day) => day.workedMinutes !== null);
+    const totalMinutes = completed.reduce((sum, day) => sum + (day.workedMinutes ?? 0), 0);
+
+    return {
+      from,
+      to,
+      days,
+      totals: {
+        daysPresent: days.filter((day) => day.clockIn).length,
+        totalMinutes,
+        averageMinutes: completed.length ? Math.round(totalMinutes / completed.length) : 0,
+      },
+    };
   }
 
   private async record(
