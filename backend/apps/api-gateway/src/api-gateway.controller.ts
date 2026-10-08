@@ -25,6 +25,11 @@ export class ApiGatewayController {
     return this.apiGatewayService.getEmployeeMe(user);
   }
 
+  @Patch('employee/me')
+  updateEmployeeMe(@CurrentUser() user: AuthUser, @Body() body: unknown) {
+    return this.apiGatewayService.updateEmployeeMe(user, body);
+  }
+
   @Get('attendance/today')
   getAttendanceToday(@CurrentUser() user: AuthUser) {
     return this.apiGatewayService.getAttendanceToday(user);
