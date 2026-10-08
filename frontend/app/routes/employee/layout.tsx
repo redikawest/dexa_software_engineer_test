@@ -4,6 +4,8 @@ import { Outlet } from "react-router";
 import { AppShell, type NavItem } from "~/components/app-shell";
 import { dummyEmployee } from "~/lib/dummy-data";
 import type { EmployeeContext } from "~/lib/employee-context";
+import { requireRole } from "~/lib/guards";
+import { clearSession } from "~/lib/session";
 
 const navItems: NavItem[] = [
   {
@@ -25,6 +27,15 @@ const navItems: NavItem[] = [
   },
 ];
 
+export function clientLoader() {
+  return requireRole("EMPLOYEE");
+}
+clientLoader.hydrate = true as const;
+
+export function HydrateFallback() {
+  return <p className="p-6 text-center text-sm text-gray-500">Loading...</p>;
+}
+
 export default function EmployeeLayout() {
   const [employee, setEmployee] = useState(dummyEmployee);
 
@@ -36,6 +47,7 @@ export default function EmployeeLayout() {
       userName={employee.name}
       userPhotoUrl={employee.photoUrl}
       logoutPath="/login"
+      onLogout={clearSession}
     >
       <Outlet context={{ employee, setEmployee } satisfies EmployeeContext} />
     </AppShell>

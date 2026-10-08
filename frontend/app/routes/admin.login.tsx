@@ -3,7 +3,13 @@ import { Link, useNavigate } from "react-router";
 import type { Route } from "./+types/admin.login";
 import { LoginForm } from "~/components/login-form";
 import { login } from "~/lib/auth";
+import { redirectIfLoggedIn } from "~/lib/guards";
 import { saveSession } from "~/lib/session";
+
+export function clientLoader() {
+  return redirectIfLoggedIn();
+}
+clientLoader.hydrate = true as const;
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "HR Admin Login" }];

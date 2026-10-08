@@ -15,6 +15,7 @@ type AppShellProps = {
   userName: string;
   userPhotoUrl?: string | null;
   logoutPath: string;
+  onLogout?: () => void;
   widthClass?: string;
   children: React.ReactNode;
 };
@@ -27,6 +28,7 @@ export function AppShell({
   userName,
   userPhotoUrl,
   logoutPath,
+  onLogout,
   widthClass = "max-w-4xl",
   children,
 }: AppShellProps) {
@@ -57,7 +59,7 @@ export function AppShell({
           <div className="ml-auto flex items-center gap-3">
             <span className="hidden text-sm text-gray-600 md:inline">{userName}</span>
             <Avatar name={userName} src={userPhotoUrl} size="sm" />
-            <Link to={logoutPath} className="hidden text-sm text-gray-500 hover:text-gray-800 md:inline">
+            <Link to={logoutPath} onClick={onLogout} className="text-sm text-gray-500 hover:text-gray-800">
               Log out
             </Link>
           </div>

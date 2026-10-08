@@ -2,6 +2,8 @@ import { Outlet } from "react-router";
 
 import { AppShell, type NavItem } from "~/components/app-shell";
 import { dummyAdmin } from "~/lib/dummy-data";
+import { requireRole } from "~/lib/guards";
+import { clearSession } from "~/lib/session";
 
 const navItems: NavItem[] = [
   {
@@ -20,6 +22,15 @@ const navItems: NavItem[] = [
   },
 ];
 
+export function clientLoader() {
+  return requireRole("HR_ADMIN");
+}
+clientLoader.hydrate = true as const;
+
+export function HydrateFallback() {
+  return <p className="p-6 text-center text-sm text-gray-500">Loading...</p>;
+}
+
 export default function AdminLayout() {
   return (
     <AppShell
@@ -28,6 +39,7 @@ export default function AdminLayout() {
       items={navItems}
       userName={dummyAdmin.name}
       logoutPath="/admin/login"
+      onLogout={clearSession}
       widthClass="max-w-5xl"
     >
       <Outlet />
