@@ -1,6 +1,9 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { compare, hashSync } from 'bcryptjs';
+import { readJwtSigningConfig } from '@app/config';
 import { Repository } from 'typeorm';
 import { EmployeeLogin } from './employee-login.entity.js';
 
@@ -11,7 +14,15 @@ const invalidLogin = () => new UnauthorizedException('Invalid email or password'
 
 @Injectable()
 export class AuthServiceService {
-  constructor(@InjectRepository(EmployeeLogin) private readonly logins: Repository<EmployeeLogin>) {}
+  private readonly expiresIn: number;
+
+  constructor(
+    @InjectRepository(EmployeeLogin) private readonly logins: Repository<EmployeeLogin>,
+    private readonly jwt: JwtService,
+    config: ConfigService,
+  ) {
+    this.expiresIn = readJwtSigningConfig((key) => config.get<string>(key)).expiresInSeconds;
+  }
 
   getHello(): string {
     return 'Hello World From Auth Service!';
@@ -35,10 +46,12 @@ export class AuthServiceService {
     const passwordMatches = await compare(password, account.passwordHash);
     if (!passwordMatches || !account.isActive) throw invalidLogin();
 
+    const accessToken = await this.jwt.signAsync({ sub: account.id, role: account.role });
+
     return {
-      accessToken: 'dummy-access-token',
+      accessToken,
       tokenType: 'Bearer',
-      expiresIn: 3600,
+      expiresIn: this.expiresIn,
       user: { id: account.id, email: account.email, role: account.role },
     };
   }

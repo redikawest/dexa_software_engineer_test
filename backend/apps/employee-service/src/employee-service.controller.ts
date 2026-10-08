@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { CallerId } from '@app/config';
 import { EmployeeServiceService } from './employee-service.service.js';
 
 @Controller()
@@ -11,7 +12,7 @@ export class EmployeeServiceController {
   }
 
   @Get('employee/me')
-  getMe() {
-    return this.employeeServiceService.getMe();
+  getMe(@CallerId() id: string) {
+    return this.employeeServiceService.getMe(id);
   }
 }

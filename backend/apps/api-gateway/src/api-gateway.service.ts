@@ -1,7 +1,8 @@
 import { BadGatewayException, HttpException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, { isAxiosError, type AxiosInstance, type AxiosResponse } from 'axios';
-import type { Env } from '@app/config';
+import { USER_ID_HEADER, USER_ROLE_HEADER, type Env } from '@app/config';
+import type { AuthUser } from './auth/auth-user.js';
 
 @Injectable()
 export class ApiGatewayService {
@@ -27,8 +28,14 @@ export class ApiGatewayService {
     return this.forward('Auth', () => this.authClient.post('/auth/login', body ?? {}));
   }
 
-  getEmployeeMe() {
-    return this.forward('Employee', () => this.employeeClient.get('/employee/me'));
+  getEmployeeMe(user: AuthUser) {
+    return this.forward('Employee', () =>
+      this.employeeClient.get('/employee/me', { headers: this.identityHeaders(user) }),
+    );
+  }
+
+  private identityHeaders(user: AuthUser) {
+    return { [USER_ID_HEADER]: user.id, [USER_ROLE_HEADER]: user.role };
   }
 
   private async forward(serviceName: string, call: () => Promise<AxiosResponse>) {

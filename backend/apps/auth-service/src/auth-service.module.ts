@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppConfigModule, readDatabaseConfig, toPostgresConnection } from '@app/config';
+import { AppConfigModule, JWT_ALGORITHM, readDatabaseConfig, readJwtSigningConfig, toPostgresConnection } from '@app/config';
 import { AuthServiceController } from './auth-service.controller.js';
 import { AuthServiceService } from './auth-service.service.js';
 import { EmployeeLogin } from './employee-login.entity.js';
@@ -21,6 +22,18 @@ import { EmployeeLogin } from './employee-login.entity.js';
       }),
     }),
     TypeOrmModule.forFeature([EmployeeLogin]),
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const { privateKey, expiresInSeconds, issuer, audience } = readJwtSigningConfig((key) =>
+          config.get<string>(key),
+        );
+        return {
+          privateKey,
+          signOptions: { algorithm: JWT_ALGORITHM, expiresIn: expiresInSeconds, issuer, audience },
+        };
+      },
+    }),
   ],
   controllers: [AuthServiceController],
   providers: [AuthServiceService],

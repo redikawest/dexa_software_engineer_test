@@ -46,6 +46,9 @@ services:
       GATEWAY_PORT: 3000
       AUTH_SERVICE_URL: http://auth-service:3001
       EMPLOYEE_SERVICE_URL: http://employee-service:3002
+      JWT_PUBLIC_KEY_PATH: /run/secrets/jwt-public.pem
+    volumes:
+      - ./backend/keys/jwt-public.pem:/run/secrets/jwt-public.pem:ro
     depends_on:
       auth-service:
         condition: service_healthy
@@ -69,6 +72,8 @@ services:
     restart: unless-stopped
     environment:
       AUTH_SERVICE_PORT: 3001
+      JWT_PRIVATE_KEY_PATH: /run/secrets/jwt-private.pem
+      JWT_EXPIRES_IN_SECONDS: ${JWT_EXPIRES_IN_SECONDS:-3600}
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: ${POSTGRES_USER:-dexa}
@@ -77,8 +82,8 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-    ports:
-      - "3001:3001"
+    volumes:
+      - ./backend/keys/jwt-private.pem:/run/secrets/jwt-private.pem:ro
     healthcheck:
       test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3001').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""]
       interval: 10s
@@ -103,8 +108,6 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-    ports:
-      - "3002:3002"
     healthcheck:
       test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3002').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""]
       interval: 10s
@@ -121,8 +124,6 @@ services:
     restart: unless-stopped
     environment:
       ATTENDANCE_SERVICE_PORT: 3003
-    ports:
-      - "3003:3003"
     healthcheck:
       test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3003').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""]
       interval: 10s

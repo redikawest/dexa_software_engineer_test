@@ -9,3 +9,4 @@ coverage
 **/test
 **/*.spec.ts
 npm-debug.log*
+keys
