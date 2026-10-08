@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Res } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Res } from '@nestjs/common';
 import { CallerId } from '@app/config';
 import type { Response } from 'express';
 import { parseCreateLogin } from './create-login.js';
@@ -32,6 +32,12 @@ export class AuthServiceController {
     const { created, login } = await this.authServiceService.createLogin(parseCreateLogin(body));
     res.status(created ? 201 : 200);
     return login;
+  }
+
+  @Patch('internal/logins/:id')
+  setLoginActive(@Param('id', new ParseUUIDPipe()) id: string, @Body() body: { isActive?: unknown }) {
+    if (typeof body?.isActive !== 'boolean') throw new BadRequestException('isActive must be true or false');
+    return this.authServiceService.setLoginActive(id, body.isActive);
   }
 
   @Delete('internal/logins/:id')

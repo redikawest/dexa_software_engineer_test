@@ -8,10 +8,6 @@ export type CreateLoginResult =
   | { ok: false; reason: 'conflict' } // the auth-service already has this email (or id)
   | { ok: false; reason: 'unavailable' }; // unreachable, too slow, or an unexpected answer
 
-/**
- * The employee-service's way to the auth-service, which owns the login accounts.
- * The timeouts are short on purpose: the whole request still has to finish inside the gateway's limit.
- */
 @Injectable()
 export class AuthClient {
   private readonly http: AxiosInstance;
@@ -30,7 +26,19 @@ export class AuthClient {
     }
   }
 
-  /** Undoes createLogin. Deleting an account that does not exist is fine. Returns false if it could not be reached. */
+  async setLoginActive(id: string, isActive: boolean): Promise<'ok' | 'not_found' | 'unavailable'> {
+    try {
+      await this.http.patch(`/internal/logins/${id}`, { isActive }, { timeout: 2500 });
+      return 'ok';
+    } catch (error) {
+      const notFound =
+        isAxiosError(error) &&
+        error.response?.status === 404 &&
+        (error.response.data as { message?: unknown } | undefined)?.message === 'Login account not found';
+      return notFound ? 'not_found' : 'unavailable';
+    }
+  }
+
   async deleteLogin(id: string): Promise<boolean> {
     try {
       await this.http.delete(`/internal/logins/${id}`, { timeout: 1500 });

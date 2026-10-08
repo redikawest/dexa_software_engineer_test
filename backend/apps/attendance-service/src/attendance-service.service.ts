@@ -3,7 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'node:crypto';
 import { Between, QueryFailedError, Repository } from 'typeorm';
 import { AttendanceRecord, type AttendanceType } from './attendance-record.entity.js';
+import type { AdminAttendanceQuery } from './admin-attendance-query.js';
 import type { DateRange } from './date-range.js';
+import { EmployeeClient } from './employee-client.js';
 import { toWorkDate } from './work-date.js';
 
 const UNIQUE_VIOLATION = '23505';
@@ -12,6 +14,7 @@ const UNIQUE_VIOLATION = '23505';
 export class AttendanceServiceService {
   constructor(
     @InjectRepository(AttendanceRecord) private readonly records: Repository<AttendanceRecord>,
+    private readonly employees: EmployeeClient,
   ) {}
 
   getHello(): string {
@@ -76,6 +79,49 @@ export class AttendanceServiceService {
         totalMinutes,
         averageMinutes: completed.length ? Math.round(totalMinutes / completed.length) : 0,
       },
+    };
+  }
+
+  async listAll({ from, to, employeeId, page, pageSize }: AdminAttendanceQuery) {
+    const filter = `
+      FROM attendance_records
+      WHERE work_date BETWEEN $1 AND $2 AND ($3::uuid IS NULL OR employee_id = $3::uuid)
+      GROUP BY employee_id, work_date`;
+
+    const rows: { employee_id: string; work_date: string; clock_in: Date | null; clock_out: Date | null }[] =
+      await this.records.query(
+        `SELECT employee_id,
+                to_char(work_date, 'YYYY-MM-DD') AS work_date,
+                min(recorded_at) FILTER (WHERE type = 'CLOCK_IN') AS clock_in,
+                max(recorded_at) FILTER (WHERE type = 'CLOCK_OUT') AS clock_out
+         ${filter}
+         ORDER BY work_date DESC, clock_in ASC NULLS LAST, employee_id ASC
+         LIMIT $4 OFFSET $5`,
+        [from, to, employeeId, pageSize, (page - 1) * pageSize],
+      );
+    const [{ total }]: { total: number }[] = await this.records.query(
+      `SELECT count(*)::int AS total FROM (SELECT 1 ${filter}) days`,
+      [from, to, employeeId],
+    );
+
+    const names = await this.employees.findByIds([...new Set(rows.map((row) => row.employee_id))]);
+
+    return {
+      from,
+      to,
+      page,
+      pageSize,
+      total,
+      items: rows.map((row) => ({
+        employeeId: row.employee_id,
+        employeeName: names.get(row.employee_id)?.name ?? null,
+        position: names.get(row.employee_id)?.position ?? null,
+        workDate: row.work_date,
+        clockIn: row.clock_in,
+        clockOut: row.clock_out,
+        workedMinutes:
+          row.clock_in && row.clock_out ? Math.floor((row.clock_out.getTime() - row.clock_in.getTime()) / 60_000) : null,
+      })),
     };
   }
 

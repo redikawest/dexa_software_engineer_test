@@ -53,9 +53,28 @@ export class ApiGatewayController {
   }
 
   @Roles('HR_ADMIN')
+  @Patch('admin/employees/:id')
+  updateEmployee(@CurrentUser() user: AuthUser, @Param('id') id: string, @Body() body: unknown) {
+    return this.apiGatewayService.updateEmployee(user, id, body);
+  }
+
+  @Roles('HR_ADMIN')
   @Get('admin/employees/:id')
   getEmployee(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.apiGatewayService.getEmployee(user, id);
+  }
+
+  @Roles('HR_ADMIN')
+  @Get('admin/attendance')
+  listAllAttendance(
+    @CurrentUser() user: AuthUser,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('employeeId') employeeId?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.apiGatewayService.listAllAttendance(user, { from, to, employeeId, page, pageSize });
   }
 
   @Get('attendance/today')

@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { CallerId } from '@app/config';
+import { parseEmployeeUpdate } from './employee-update.js';
 import { parseNewEmployee } from './new-employee.js';
 import { parseEmployeeListQuery } from './employee-list-query.js';
 import { parseProfileUpdate } from './profile-update.js';
@@ -34,8 +35,27 @@ export class EmployeeServiceController {
     return this.employeeServiceService.create(adminId, parseNewEmployee(body));
   }
 
+  @Get('internal/employees')
+  findSummaries(@Query('ids') ids?: string) {
+    const list = (ids ?? '').split(',').filter(Boolean);
+    const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (list.length > 100 || list.some((id) => !uuid.test(id))) {
+      throw new BadRequestException('ids must be at most 100 comma-separated UUIDs');
+    }
+    return this.employeeServiceService.findSummaries(list);
+  }
+
   @Get('employees/:id')
   getById(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.employeeServiceService.getById(id);
+  }
+
+  @Patch('employees/:id')
+  update(
+    @CallerId() adminId: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() body: unknown,
+  ) {
+    return this.employeeServiceService.update(adminId, id, parseEmployeeUpdate(body));
   }
 }

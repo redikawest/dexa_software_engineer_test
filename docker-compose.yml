@@ -128,6 +128,7 @@ services:
     restart: unless-stopped
     environment:
       ATTENDANCE_SERVICE_PORT: 3003
+      EMPLOYEE_SERVICE_URL: http://employee-service:3002
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: ${POSTGRES_USER:-dexa}

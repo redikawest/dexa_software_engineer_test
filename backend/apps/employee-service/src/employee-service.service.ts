@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
@@ -7,10 +8,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'node:crypto';
-import { ILike, QueryFailedError, Repository } from 'typeorm';
+import { ILike, In, QueryFailedError, Repository } from 'typeorm';
 import { AuthClient } from './auth-client.js';
 import type { EmployeeListQuery } from './employee-list-query.js';
 import { Employee } from './employee.entity.js';
+import type { EmployeeUpdate } from './employee-update.js';
 import type { NewEmployee } from './new-employee.js';
 import type { ProfileUpdate } from './profile-update.js';
 
@@ -101,6 +103,38 @@ export class EmployeeServiceService {
     throw new ServiceUnavailableException('The login account could not be created. Nothing was saved, try again.');
   }
 
+  async update(adminId: string, id: string, input: EmployeeUpdate) {
+    const employee = await this.findOrFail(id);
+    const { isActive, ...fields } = input;
+
+    if (isActive === false && id === adminId) {
+      throw new BadRequestException('You cannot deactivate your own account');
+    }
+
+    const previouslyActive = employee.isActive;
+    let loginChanged = false;
+    if (isActive !== undefined) {
+      const result = await this.auth.setLoginActive(id, isActive);
+      if (result === 'unavailable') {
+        throw new ServiceUnavailableException('The login account could not be updated. Nothing was changed, try again.');
+      }
+      if (result === 'not_found') this.logger.warn(`Employee ${id} has no login account to ${isActive ? 'enable' : 'disable'}`);
+      loginChanged = result === 'ok';
+      employee.isActive = isActive;
+    }
+    Object.assign(employee, fields);
+
+    try {
+      await this.employees.save(employee);
+    } catch (error) {
+      if (loginChanged && !(await this.auth.setLoginActive(id, previouslyActive) === 'ok')) {
+        this.logger.error(`Could not put the login of employee ${id} back to active=${previouslyActive}. Fix it by hand.`);
+      }
+      throw error;
+    }
+    return this.getById(id);
+  }
+
   private async undoCreate(id: string) {
     const loginRemoved = await this.auth.deleteLogin(id);
     const profileRemoved = await this.employees.delete({ id }).then(
@@ -112,6 +146,11 @@ export class EmployeeServiceService {
         `Could not fully undo adding employee ${id} (login removed: ${loginRemoved}, profile removed: ${profileRemoved}). Clean it up by hand.`,
       );
     }
+  }
+
+  async findSummaries(ids: string[]) {
+    const rows = ids.length ? await this.employees.find({ where: { id: In(ids) } }) : [];
+    return rows.map((employee) => ({ id: employee.id, name: employee.fullName, position: employee.position }));
   }
 
   private async findOrFail(id: string) {

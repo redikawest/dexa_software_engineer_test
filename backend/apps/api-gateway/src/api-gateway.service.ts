@@ -63,9 +63,23 @@ export class ApiGatewayService {
     );
   }
 
+  updateEmployee(user: AuthUser, id: string, body: unknown) {
+    return this.forward('Employee', () =>
+      this.employeeClient.patch(`/employees/${encodeURIComponent(id)}`, body ?? {}, {
+        headers: this.identityHeaders(user),
+      }),
+    );
+  }
+
   getEmployee(user: AuthUser, id: string) {
     return this.forward('Employee', () =>
       this.employeeClient.get(`/employees/${encodeURIComponent(id)}`, { headers: this.identityHeaders(user) }),
+    );
+  }
+
+  listAllAttendance(user: AuthUser, query: Record<string, string | undefined>) {
+    return this.forward('Attendance', () =>
+      this.attendanceClient.get('/attendance', { headers: this.identityHeaders(user), params: query }),
     );
   }
 

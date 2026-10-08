@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -106,6 +106,14 @@ export class AuthServiceService {
       if (existing && existing.email === email) return { created: false, login: toLoginView(existing) };
       throw new ConflictException('An account with this id or email already exists');
     }
+  }
+
+  async setLoginActive(id: string, isActive: boolean) {
+    const login = await this.logins.findOne({ where: { id } });
+    if (!login) throw new NotFoundException('Login account not found');
+    login.isActive = isActive;
+    await this.logins.save(login);
+    return toLoginView(login);
   }
 
   async deleteLogin(id: string) {
