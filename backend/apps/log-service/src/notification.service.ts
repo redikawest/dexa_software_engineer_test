@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'node:crypto';
 import { MoreThan, Repository } from 'typeorm';
@@ -9,8 +9,6 @@ import { Notification } from './notification.entity.js';
 
 const DAY_MS = 86_400_000;
 const WINDOW_DAYS = 30;
-const DEFAULT_LIMIT = 20;
-const MAX_LIMIT = 50;
 
 @Injectable()
 export class NotificationService {
@@ -51,8 +49,7 @@ export class NotificationService {
     );
   }
 
-  async list(adminId: string, rawLimit: unknown) {
-    const limit = this.parseLimit(rawLimit);
+  async list(adminId: string, limit: number) {
     const since = await this.unreadSince(adminId);
     const windowStart = this.windowStart();
 
@@ -81,10 +78,8 @@ export class NotificationService {
     };
   }
 
-  async markSeen(adminId: string, seenUntil: unknown): Promise<{ unreadCount: number }> {
-    const until = typeof seenUntil === 'string' ? new Date(seenUntil) : null;
-    if (!until || Number.isNaN(until.getTime())) throw new BadRequestException('seenUntil must be an ISO time');
-    const moment = new Date(Math.min(until.getTime(), Date.now()));
+  async markSeen(adminId: string, seenUntil: string): Promise<{ unreadCount: number }> {
+    const moment = new Date(Math.min(new Date(seenUntil).getTime(), Date.now()));
 
     await this.states.query(
       `INSERT INTO admin_notification_state (admin_id, last_seen_at) VALUES ($1, $2)
@@ -104,14 +99,5 @@ export class NotificationService {
 
   private windowStart(): Date {
     return new Date(Date.now() - WINDOW_DAYS * DAY_MS);
-  }
-
-  private parseLimit(value: unknown): number {
-    if (value === undefined || value === '') return DEFAULT_LIMIT;
-    const limit = typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : NaN;
-    if (!Number.isSafeInteger(limit) || limit < 1 || limit > MAX_LIMIT) {
-      throw new BadRequestException(`limit must be a whole number between 1 and ${MAX_LIMIT}`);
-    }
-    return limit;
   }
 }

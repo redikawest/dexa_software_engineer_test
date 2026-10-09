@@ -5,7 +5,6 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const IDS_MESSAGE = 'ids must be at most 100 comma-separated UUIDs';
 
 export class FindSummariesQueryDto {
-  /** Sent as ?ids=a,b,c and read as a list. */
   @Transform(({ value }) => (typeof value === 'string' ? value.split(',').filter(Boolean) : value))
   @ArrayMaxSize(100, { message: IDS_MESSAGE })
   @Matches(UUID, { each: true, message: IDS_MESSAGE })

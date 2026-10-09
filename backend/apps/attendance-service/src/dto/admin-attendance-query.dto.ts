@@ -5,7 +5,6 @@ import { DateRangeQueryDto } from './date-range-query.dto.js';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_PAGE_SIZE = 100;
 
-/** '' means "not given" and keeps the default; digits become a number; anything else stays text so IsInt rejects it. */
 const wholeNumber =
   (fallback: number) =>
   ({ value }: TransformFnParams): unknown => {

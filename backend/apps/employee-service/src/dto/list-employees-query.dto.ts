@@ -5,7 +5,6 @@ import { trimText } from './transforms.js';
 const MAX_SEARCH_LENGTH = 100;
 const MAX_PAGE_SIZE = 100;
 
-/** '' means "not given" and keeps the default; digits become a number; anything else stays text so IsInt rejects it. */
 const wholeNumber =
   (fallback: number) =>
   ({ value }: TransformFnParams): unknown => {

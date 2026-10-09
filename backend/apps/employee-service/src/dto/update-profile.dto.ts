@@ -11,7 +11,6 @@ export class UpdateProfileDto {
   @Matches(PHONE_PATTERN, { message: PHONE_MESSAGE })
   phone?: string;
 
-  /** null removes the photo. */
   @IsOptional()
   @IsUrl({ protocols: ['http', 'https'], require_protocol: true, require_tld: false }, { message: PHOTO_MESSAGE })
   @MaxLength(MAX_PHOTO_URL_LENGTH, { message: PHOTO_MESSAGE })
