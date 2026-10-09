@@ -7,7 +7,7 @@ export interface DatabaseConfig {
   logging: boolean;
 }
 
-export function readDatabaseConfig(get: (key: string) => string | undefined): DatabaseConfig {
+export function readDatabaseConfig(get: (key: string) => string | undefined, prefix = 'DB'): DatabaseConfig {
   const errors: string[] = [];
   const required = (key: string) => {
     const value = get(key)?.trim();
@@ -15,24 +15,24 @@ export function readDatabaseConfig(get: (key: string) => string | undefined): Da
     return value ?? '';
   };
 
-  const port = Number(required('DB_PORT'));
-  if (get('DB_PORT') && (!Number.isInteger(port) || port < 1 || port > 65535)) {
-    errors.push(`DB_PORT must be a port number between 1 and 65535 (got "${get('DB_PORT')}")`);
+  const port = Number(required(`${prefix}_PORT`));
+  if (get(`${prefix}_PORT`) && (!Number.isInteger(port) || port < 1 || port > 65535)) {
+    errors.push(`${prefix}_PORT must be a port number between 1 and 65535 (got "${get(`${prefix}_PORT`)}")`);
   }
 
   const config: DatabaseConfig = {
-    host: required('DB_HOST'),
+    host: required(`${prefix}_HOST`),
     port,
-    username: required('DB_USER'),
-    password: required('DB_PASSWORD'),
-    database: required('DB_NAME'),
-    logging: get('DB_LOGGING') === 'true',
+    username: required(`${prefix}_USER`),
+    password: required(`${prefix}_PASSWORD`),
+    database: required(`${prefix}_NAME`),
+    logging: get(`${prefix}_LOGGING`) === 'true',
   };
 
   if (errors.length > 0) {
     throw new Error(
       `Invalid database configuration:\n - ${errors.join('\n - ')}\n` +
-        'Add the DB_* values to backend/.env (see backend/.env.example).',
+        `Add the ${prefix}_* values to backend/.env (see backend/.env.example).`,
     );
   }
   return config;

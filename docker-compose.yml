@@ -31,9 +31,33 @@ services:
       DB_USER: ${POSTGRES_USER:-dexa}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-dexa_dev_password}
       DB_NAME: ${POSTGRES_DB:-dexa_main}
+      LOGS_DB_HOST: postgres
+      LOGS_DB_PORT: 5432
+      LOGS_DB_USER: ${LOGS_DB_USER:-dexa_logs}
+      LOGS_DB_PASSWORD: ${LOGS_DB_PASSWORD:-dexa_logs_dev_password}
+      LOGS_DB_NAME: ${LOGS_DB_NAME:-dexa_logs}
     depends_on:
       postgres:
         condition: service_healthy
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    container_name: dexa-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-dexa}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-dexa_dev_password}
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
 
   api-gateway:
     build:
@@ -147,3 +171,4 @@ services:
 
 volumes:
   postgres_data:
+  rabbitmq_data:

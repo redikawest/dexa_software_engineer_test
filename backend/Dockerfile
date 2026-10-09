@@ -19,7 +19,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
-CMD ["npm", "run", "migration:run"]
+CMD ["npm", "run", "db:migrate"]
 
 FROM node:${NODE_VERSION}-slim AS runtime
 ARG SERVICE
