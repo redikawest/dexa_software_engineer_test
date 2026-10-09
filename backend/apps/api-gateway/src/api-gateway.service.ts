@@ -3,6 +3,15 @@ import { ConfigService } from '@nestjs/config';
 import axios, { isAxiosError, type AxiosInstance, type AxiosResponse } from 'axios';
 import { USER_ID_HEADER, USER_ROLE_HEADER, type Env } from '@app/config';
 import type { AuthUser } from './auth/auth-user.js';
+import type { ChangePasswordBody, LoginBody } from './types/auth.js';
+import type { ListAttendanceQuery } from './types/attendance.js';
+import type {
+  CreateEmployeeBody,
+  ListEmployeesQuery,
+  UpdateEmployeeBody,
+  UpdateMyProfileBody,
+} from './types/employee.js';
+import type { MarkSeenBody } from './types/notification.js';
 
 @Injectable()
 export class ApiGatewayService {
@@ -34,11 +43,11 @@ export class ApiGatewayService {
     return 'Hello World From Api Gateway Service!';
   }
 
-  login(body: unknown) {
+  login(body: LoginBody) {
     return this.forward('Auth', () => this.authClient.post('/auth/login', body ?? {}));
   }
 
-  changePassword(user: AuthUser, body: unknown) {
+  changePassword(user: AuthUser, body: ChangePasswordBody) {
     return this.forward('Auth', () =>
       this.authClient.patch('/auth/password', body ?? {}, { headers: this.identityHeaders(user) }),
     );
@@ -50,25 +59,25 @@ export class ApiGatewayService {
     );
   }
 
-  updateEmployeeMe(user: AuthUser, body: unknown) {
+  updateEmployeeMe(user: AuthUser, body: UpdateMyProfileBody) {
     return this.forward('Employee', () =>
       this.employeeClient.patch('/employee/me', body ?? {}, { headers: this.identityHeaders(user) }),
     );
   }
 
-  listEmployees(user: AuthUser, query: { page?: string; pageSize?: string; search?: string }) {
+  listEmployees(user: AuthUser, query: ListEmployeesQuery) {
     return this.forward('Employee', () =>
       this.employeeClient.get('/employees', { headers: this.identityHeaders(user), params: query }),
     );
   }
 
-  createEmployee(user: AuthUser, body: unknown) {
+  createEmployee(user: AuthUser, body: CreateEmployeeBody) {
     return this.forward('Employee', () =>
       this.employeeClient.post('/employees', body ?? {}, { headers: this.identityHeaders(user) }),
     );
   }
 
-  updateEmployee(user: AuthUser, id: string, body: unknown) {
+  updateEmployee(user: AuthUser, id: string, body: UpdateEmployeeBody) {
     return this.forward('Employee', () =>
       this.employeeClient.patch(`/employees/${encodeURIComponent(id)}`, body ?? {}, {
         headers: this.identityHeaders(user),
@@ -82,7 +91,7 @@ export class ApiGatewayService {
     );
   }
 
-  listAllAttendance(user: AuthUser, query: Record<string, string | undefined>) {
+  listAllAttendance(user: AuthUser, query: ListAttendanceQuery) {
     return this.forward('Attendance', () =>
       this.attendanceClient.get('/attendance', { headers: this.identityHeaders(user), params: query }),
     );
@@ -121,7 +130,7 @@ export class ApiGatewayService {
     );
   }
 
-  markNotificationsSeen(user: AuthUser, body: unknown) {
+  markNotificationsSeen(user: AuthUser, body: MarkSeenBody) {
     return this.forward('Log', () =>
       this.logClient.post('/notifications/seen', body ?? {}, { headers: this.identityHeaders(user) }),
     );

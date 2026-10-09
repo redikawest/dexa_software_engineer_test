@@ -2,6 +2,9 @@ import { Body, Controller, Get, HttpCode, Param, Patch, Post, Query } from '@nes
 import { ApiGatewayService } from './api-gateway.service.js';
 import { CurrentUser, type AuthUser } from './auth/auth-user.js';
 import { Public, Roles } from './auth/decorators.js';
+import type { ChangePasswordBody, LoginBody } from './types/auth.js';
+import type { CreateEmployeeBody, UpdateEmployeeBody, UpdateMyProfileBody } from './types/employee.js';
+import type { MarkSeenBody } from './types/notification.js';
 
 @Controller()
 export class ApiGatewayController {
@@ -16,12 +19,12 @@ export class ApiGatewayController {
   @Public()
   @Post('auth/login')
   @HttpCode(200)
-  login(@Body() body: unknown) {
+  login(@Body() body: LoginBody) {
     return this.apiGatewayService.login(body);
   }
 
   @Patch('auth/password')
-  changePassword(@CurrentUser() user: AuthUser, @Body() body: unknown) {
+  changePassword(@CurrentUser() user: AuthUser, @Body() body: ChangePasswordBody) {
     return this.apiGatewayService.changePassword(user, body);
   }
 
@@ -31,7 +34,7 @@ export class ApiGatewayController {
   }
 
   @Patch('employee/me')
-  updateEmployeeMe(@CurrentUser() user: AuthUser, @Body() body: unknown) {
+  updateEmployeeMe(@CurrentUser() user: AuthUser, @Body() body: UpdateMyProfileBody) {
     return this.apiGatewayService.updateEmployeeMe(user, body);
   }
 
@@ -48,13 +51,13 @@ export class ApiGatewayController {
 
   @Roles('HR_ADMIN')
   @Post('admin/employees')
-  createEmployee(@CurrentUser() user: AuthUser, @Body() body: unknown) {
+  createEmployee(@CurrentUser() user: AuthUser, @Body() body: CreateEmployeeBody) {
     return this.apiGatewayService.createEmployee(user, body);
   }
 
   @Roles('HR_ADMIN')
   @Patch('admin/employees/:id')
-  updateEmployee(@CurrentUser() user: AuthUser, @Param('id') id: string, @Body() body: unknown) {
+  updateEmployee(@CurrentUser() user: AuthUser, @Param('id') id: string, @Body() body: UpdateEmployeeBody) {
     return this.apiGatewayService.updateEmployee(user, id, body);
   }
 
@@ -73,7 +76,7 @@ export class ApiGatewayController {
   @Roles('HR_ADMIN')
   @Post('admin/notifications/seen')
   @HttpCode(200)
-  markNotificationsSeen(@CurrentUser() user: AuthUser, @Body() body: unknown) {
+  markNotificationsSeen(@CurrentUser() user: AuthUser, @Body() body: MarkSeenBody) {
     return this.apiGatewayService.markNotificationsSeen(user, body);
   }
 
