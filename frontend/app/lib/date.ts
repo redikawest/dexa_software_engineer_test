@@ -18,6 +18,15 @@ export function formatDate(iso: string, long = false): string {
   });
 }
 
+export function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: TZ,
+  });
+}
+
 export function toMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);
   return h * 60 + m;

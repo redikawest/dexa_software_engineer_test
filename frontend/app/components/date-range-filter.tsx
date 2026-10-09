@@ -12,10 +12,11 @@ type DateRangeFilterProps = {
   value: DateRange;
   defaultValue: DateRange;
   onChange: (range: DateRange) => void;
+  maxDays?: number;
 };
 
 /** Collapsible period picker. Inputs are kept as a draft until "Apply" is pressed. */
-export function DateRangeFilter({ value, defaultValue, onChange }: DateRangeFilterProps) {
+export function DateRangeFilter({ value, defaultValue, onChange, maxDays }: DateRangeFilterProps) {
   const [draft, setDraft] = useState(value);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,6 +31,11 @@ export function DateRangeFilter({ value, defaultValue, onChange }: DateRangeFilt
     }
     if (draft.from > draft.to) {
       setError("Start date can't be after the end date.");
+      return;
+    }
+    const days = (Date.parse(`${draft.to}T00:00:00Z`) - Date.parse(`${draft.from}T00:00:00Z`)) / 86_400_000 + 1;
+    if (maxDays && days > maxDays) {
+      setError(`Choose a period of at most ${maxDays} days.`);
       return;
     }
     setError(null);
