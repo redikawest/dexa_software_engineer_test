@@ -1,5 +1,6 @@
 import { Injectable, Logger, type OnApplicationBootstrap, type OnApplicationShutdown } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { AuditLogService } from './audit-log.service.js';
 import {
   AUDIT_QUEUE,
   NOTIFY_QUEUE,
@@ -14,7 +15,10 @@ export class ProfileEventsConsumer implements OnApplicationBootstrap, OnApplicat
   private readonly logger = new Logger(ProfileEventsConsumer.name);
   private running: RunningConsumers | null = null;
 
-  constructor(private readonly config: ConfigService) {}
+  constructor(
+    private readonly config: ConfigService,
+    private readonly auditLog: AuditLogService,
+  ) {}
 
   async onApplicationBootstrap(): Promise<void> {
     const url = readRabbitUrl((key) => this.config.get<string>(key));
@@ -28,8 +32,8 @@ export class ProfileEventsConsumer implements OnApplicationBootstrap, OnApplicat
     await this.running?.close();
   }
 
-  private async audit(event: ProfileChangedEvent): Promise<void> {
-    this.logger.log(`[audit] ${this.describe(event)}`);
+  private audit(event: ProfileChangedEvent): Promise<void> {
+    return this.auditLog.record(event);
   }
 
   private async notify(event: ProfileChangedEvent): Promise<void> {
