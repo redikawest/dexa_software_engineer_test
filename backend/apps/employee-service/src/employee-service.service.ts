@@ -12,11 +12,11 @@ import type { Role } from '@app/config';
 import { randomUUID } from 'node:crypto';
 import { ILike, In, QueryFailedError, Repository } from 'typeorm';
 import { AuthClient } from './auth-client.js';
-import type { EmployeeListQuery } from './employee-list-query.js';
+import type { ListEmployeesQueryDto } from './dto/list-employees-query.dto.js';
 import { Employee } from './employee.entity.js';
-import type { EmployeeUpdate } from './employee-update.js';
-import type { NewEmployee } from './new-employee.js';
-import type { ProfileUpdate } from './profile-update.js';
+import type { CreateEmployeeDto } from './dto/create-employee.dto.js';
+import type { UpdateEmployeeDto } from './dto/update-employee.dto.js';
+import type { UpdateProfileDto } from './dto/update-profile.dto.js';
 
 const UNIQUE_VIOLATION = '23505';
 
@@ -38,7 +38,10 @@ export class EmployeeServiceService {
     return toProfile(await this.findOrFail(id));
   }
 
-  async updateMe(id: string, role: Role, update: ProfileUpdate) {
+  async updateMe(id: string, role: Role, update: UpdateProfileDto) {
+    if (update.phone === undefined && update.photoUrl === undefined) {
+      throw new BadRequestException('Send at least one of: phone, photoUrl');
+    }
     const employee = await this.findOrFail(id);
 
     const changes: ProfileFieldChange[] = [];
@@ -49,7 +52,8 @@ export class EmployeeServiceService {
       changes.push({ field: 'photoUrl', from: employee.photoUrl, to: update.photoUrl });
     }
 
-    Object.assign(employee, update);
+    if (update.phone !== undefined) employee.phone = update.phone;
+    if (update.photoUrl !== undefined) employee.photoUrl = update.photoUrl;
     const saved = await this.employees.save(employee);
 
     this.announce(id, { id, role }, changes);
@@ -67,7 +71,7 @@ export class EmployeeServiceService {
     });
   }
 
-  async list({ page, pageSize, search }: EmployeeListQuery) {
+  async list({ page, pageSize, search }: ListEmployeesQueryDto) {
     const pattern = search ? `%${search.replace(/[\\%_]/g, '\\$&')}%` : null;
     const where = pattern ? [{ fullName: ILike(pattern) }, { email: ILike(pattern) }] : undefined;
 
@@ -106,8 +110,9 @@ export class EmployeeServiceService {
     };
   }
 
-  async create(adminId: string, input: NewEmployee) {
-    const { password, ...profile } = input;
+  async create(adminId: string, input: CreateEmployeeDto) {
+    const { password, name, email, position, phone } = input;
+    const profile = { fullName: name, email, position, phone };
     const id = randomUUID();
 
     try {
@@ -129,9 +134,12 @@ export class EmployeeServiceService {
     throw new ServiceUnavailableException('The login account could not be created. Nothing was saved, try again.');
   }
 
-  async update(adminId: string, id: string, input: EmployeeUpdate) {
+  async update(adminId: string, id: string, input: UpdateEmployeeDto) {
+    const { isActive, name, position, phone } = input;
+    if (isActive === undefined && name === undefined && position === undefined && phone === undefined) {
+      throw new BadRequestException('Send at least one of: name, position, phone, isActive');
+    }
     const employee = await this.findOrFail(id);
-    const { isActive, ...fields } = input;
 
     if (isActive === false && id === adminId) {
       throw new BadRequestException('You cannot deactivate your own account');
@@ -148,7 +156,9 @@ export class EmployeeServiceService {
       loginChanged = result === 'ok';
       employee.isActive = isActive;
     }
-    Object.assign(employee, fields);
+    if (name !== undefined) employee.fullName = name;
+    if (position !== undefined) employee.position = position;
+    if (phone !== undefined) employee.phone = phone;
 
     try {
       await this.employees.save(employee);

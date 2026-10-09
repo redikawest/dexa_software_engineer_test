@@ -1,9 +1,10 @@
-import { BadRequestException, Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { CallerId, CallerRole, type Role } from '@app/config';
-import { parseEmployeeUpdate } from './employee-update.js';
-import { parseNewEmployee } from './new-employee.js';
-import { parseEmployeeListQuery } from './employee-list-query.js';
-import { parseProfileUpdate } from './profile-update.js';
+import { CreateEmployeeDto } from './dto/create-employee.dto.js';
+import { FindSummariesQueryDto } from './dto/find-summaries-query.dto.js';
+import { ListEmployeesQueryDto } from './dto/list-employees-query.dto.js';
+import { UpdateEmployeeDto } from './dto/update-employee.dto.js';
+import { UpdateProfileDto } from './dto/update-profile.dto.js';
 import { EmployeeServiceService } from './employee-service.service.js';
 
 @Controller()
@@ -21,28 +22,23 @@ export class EmployeeServiceController {
   }
 
   @Patch('employee/me')
-  updateMe(@CallerId() id: string, @CallerRole() role: Role, @Body() body: unknown) {
-    return this.employeeServiceService.updateMe(id, role, parseProfileUpdate(body));
+  updateMe(@CallerId() id: string, @CallerRole() role: Role, @Body() body: UpdateProfileDto) {
+    return this.employeeServiceService.updateMe(id, role, body);
   }
 
   @Get('employees')
-  list(@Query('page') page?: string, @Query('pageSize') pageSize?: string, @Query('search') search?: string) {
-    return this.employeeServiceService.list(parseEmployeeListQuery(page, pageSize, search));
+  list(@Query() query: ListEmployeesQueryDto) {
+    return this.employeeServiceService.list(query);
   }
 
   @Post('employees')
-  create(@CallerId() adminId: string, @Body() body: unknown) {
-    return this.employeeServiceService.create(adminId, parseNewEmployee(body));
+  create(@CallerId() adminId: string, @Body() body: CreateEmployeeDto) {
+    return this.employeeServiceService.create(adminId, body);
   }
 
   @Get('internal/employees')
-  findSummaries(@Query('ids') ids?: string) {
-    const list = (ids ?? '').split(',').filter(Boolean);
-    const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (list.length > 100 || list.some((id) => !uuid.test(id))) {
-      throw new BadRequestException('ids must be at most 100 comma-separated UUIDs');
-    }
-    return this.employeeServiceService.findSummaries(list);
+  findSummaries(@Query() { ids }: FindSummariesQueryDto) {
+    return this.employeeServiceService.findSummaries(ids);
   }
 
   @Get('employees/:id')
@@ -54,8 +50,8 @@ export class EmployeeServiceController {
   update(
     @CallerId() adminId: string,
     @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() body: unknown,
+    @Body() body: UpdateEmployeeDto,
   ) {
-    return this.employeeServiceService.update(adminId, id, parseEmployeeUpdate(body));
+    return this.employeeServiceService.update(adminId, id, body);
   }
 }
