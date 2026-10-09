@@ -4,6 +4,7 @@ export interface Env {
   AUTH_SERVICE_PORT: number;
   EMPLOYEE_SERVICE_PORT: number;
   ATTENDANCE_SERVICE_PORT: number;
+  LOG_SERVICE_PORT: number;
   AUTH_SERVICE_URL: string;
   EMPLOYEE_SERVICE_URL: string;
   ATTENDANCE_SERVICE_URL: string;
@@ -76,6 +77,7 @@ export function validateEnv(raw: RawEnv): Env {
     AUTH_SERVICE_PORT: readPort(raw, 'AUTH_SERVICE_PORT', errors, 3001),
     EMPLOYEE_SERVICE_PORT: readPort(raw, 'EMPLOYEE_SERVICE_PORT', errors, 3002),
     ATTENDANCE_SERVICE_PORT: readPort(raw, 'ATTENDANCE_SERVICE_PORT', errors, 3003),
+    LOG_SERVICE_PORT: readPort(raw, 'LOG_SERVICE_PORT', errors, 3004),
 
     AUTH_SERVICE_URL: readUrl(raw, 'AUTH_SERVICE_URL', errors, 'http://localhost:3001'),
     EMPLOYEE_SERVICE_URL: readUrl(raw, 'EMPLOYEE_SERVICE_URL', errors, 'http://localhost:3002'),

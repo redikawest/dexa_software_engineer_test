@@ -54,6 +54,24 @@
       "compilerOptions": {
         "tsConfigPath": "apps/employee-service/tsconfig.app.json"
       }
+    },
+    "messaging": {
+      "type": "library",
+      "root": "libs/messaging",
+      "entryFile": "index",
+      "sourceRoot": "libs/messaging/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/messaging/tsconfig.lib.json"
+      }
+    },
+    "log-service": {
+      "type": "application",
+      "root": "apps/log-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/log-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/log-service/tsconfig.app.json"
+      }
     }
   }
 }

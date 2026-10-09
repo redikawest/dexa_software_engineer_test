@@ -28,6 +28,12 @@
       ],
       "@app/config/*": [
         "./libs/config/src/*"
+      ],
+      "@app/messaging": [
+        "./libs/messaging/src/index.ts"
+      ],
+      "@app/messaging/*": [
+        "./libs/messaging/src/*"
       ]
     }
   },
@@ -44,6 +50,9 @@
     },
     {
       "path": "./apps/employee-service/tsconfig.app.json"
+    },
+    {
+      "path": "./apps/log-service/tsconfig.app.json"
     }
   ]
 }
