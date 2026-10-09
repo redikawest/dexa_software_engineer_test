@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MessagingModule } from '@app/messaging';
 import { AppConfigModule, JWT_ALGORITHM, readDatabaseConfig, readJwtSigningConfig, toPostgresConnection } from '@app/config';
 import { AuthServiceController } from './auth-service.controller.js';
 import { AuthServiceService } from './auth-service.service.js';
@@ -10,6 +11,7 @@ import { EmployeeLogin } from './employee-login.entity.js';
 @Module({
   imports: [
     AppConfigModule,
+    MessagingModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({

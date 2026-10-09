@@ -1,6 +1,7 @@
 import { Outlet, useLoaderData } from "react-router";
 
 import { AppShell, type NavItem } from "~/components/app-shell";
+import { NotificationBell } from "~/components/notification-bell";
 import { getMe } from "~/lib/employee";
 import { loadWithSession } from "~/lib/guards";
 import { clearSession } from "~/lib/session";
@@ -57,6 +58,7 @@ export default function AdminLayout() {
       userPhotoUrl={admin.photoUrl}
       logoutPath="/admin/login"
       onLogout={clearSession}
+      headerExtra={<NotificationBell />}
       widthClass="max-w-5xl"
     >
       <Outlet />

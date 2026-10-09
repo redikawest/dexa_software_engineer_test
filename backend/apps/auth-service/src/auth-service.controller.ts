@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Res } from '@nestjs/common';
-import { CallerId } from '@app/config';
+import { CallerId, CallerRole, type Role } from '@app/config';
 import type { Response } from 'express';
 import { parseCreateLogin } from './create-login.js';
 import { AuthServiceService } from './auth-service.service.js';
@@ -23,8 +23,8 @@ export class AuthServiceController {
   }
 
   @Patch('auth/password')
-  changePassword(@CallerId() accountId: string, @Body() body: ChangePasswordBody) {
-    return this.authServiceService.changePassword(accountId, body?.currentPassword, body?.newPassword);
+  changePassword(@CallerId() accountId: string, @CallerRole() role: Role, @Body() body: ChangePasswordBody) {
+    return this.authServiceService.changePassword(accountId, role, body?.currentPassword, body?.newPassword);
   }
 
   @Post('internal/logins')

@@ -65,6 +65,19 @@ export class ApiGatewayController {
   }
 
   @Roles('HR_ADMIN')
+  @Get('admin/notifications')
+  listNotifications(@CurrentUser() user: AuthUser, @Query('limit') limit?: string) {
+    return this.apiGatewayService.listNotifications(user, limit);
+  }
+
+  @Roles('HR_ADMIN')
+  @Post('admin/notifications/seen')
+  @HttpCode(200)
+  markNotificationsSeen(@CurrentUser() user: AuthUser, @Body() body: unknown) {
+    return this.apiGatewayService.markNotificationsSeen(user, body);
+  }
+
+  @Roles('HR_ADMIN')
   @Get('admin/attendance')
   listAllAttendance(
     @CurrentUser() user: AuthUser,

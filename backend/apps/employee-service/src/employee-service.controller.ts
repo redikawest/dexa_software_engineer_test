@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
-import { CallerId } from '@app/config';
+import { CallerId, CallerRole, type Role } from '@app/config';
 import { parseEmployeeUpdate } from './employee-update.js';
 import { parseNewEmployee } from './new-employee.js';
 import { parseEmployeeListQuery } from './employee-list-query.js';
@@ -21,8 +21,8 @@ export class EmployeeServiceController {
   }
 
   @Patch('employee/me')
-  updateMe(@CallerId() id: string, @Body() body: unknown) {
-    return this.employeeServiceService.updateMe(id, parseProfileUpdate(body));
+  updateMe(@CallerId() id: string, @CallerRole() role: Role, @Body() body: unknown) {
+    return this.employeeServiceService.updateMe(id, role, parseProfileUpdate(body));
   }
 
   @Get('employees')

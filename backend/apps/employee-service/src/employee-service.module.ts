@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MessagingModule } from '@app/messaging';
 import { AppConfigModule, readDatabaseConfig, toPostgresConnection } from '@app/config';
 import { AuthClient } from './auth-client.js';
 import { Employee } from './employee.entity.js';
@@ -10,6 +11,7 @@ import { EmployeeServiceService } from './employee-service.service.js';
 @Module({
   imports: [
     AppConfigModule,
+    MessagingModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({

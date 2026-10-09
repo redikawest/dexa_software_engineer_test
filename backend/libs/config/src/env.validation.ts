@@ -8,6 +8,7 @@ export interface Env {
   AUTH_SERVICE_URL: string;
   EMPLOYEE_SERVICE_URL: string;
   ATTENDANCE_SERVICE_URL: string;
+  LOG_SERVICE_URL: string;
   CORS_ORIGINS: string[];
 }
 
@@ -82,6 +83,7 @@ export function validateEnv(raw: RawEnv): Env {
     AUTH_SERVICE_URL: readUrl(raw, 'AUTH_SERVICE_URL', errors, 'http://localhost:3001'),
     EMPLOYEE_SERVICE_URL: readUrl(raw, 'EMPLOYEE_SERVICE_URL', errors, 'http://localhost:3002'),
     ATTENDANCE_SERVICE_URL: readUrl(raw, 'ATTENDANCE_SERVICE_URL', errors, 'http://localhost:3003'),
+    LOG_SERVICE_URL: readUrl(raw, 'LOG_SERVICE_URL', errors, 'http://localhost:3004'),
     CORS_ORIGINS: readOrigins(raw, 'CORS_ORIGINS', errors, 'http://localhost:5173'),
   };
 

@@ -7,6 +7,8 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { EventPublisher, type ProfileFieldChange } from '@app/messaging';
+import type { Role } from '@app/config';
 import { randomUUID } from 'node:crypto';
 import { ILike, In, QueryFailedError, Repository } from 'typeorm';
 import { AuthClient } from './auth-client.js';
@@ -25,6 +27,7 @@ export class EmployeeServiceService {
   constructor(
     @InjectRepository(Employee) private readonly employees: Repository<Employee>,
     private readonly auth: AuthClient,
+    private readonly events: EventPublisher,
   ) {}
 
   getHello(): string {
@@ -35,10 +38,33 @@ export class EmployeeServiceService {
     return toProfile(await this.findOrFail(id));
   }
 
-  async updateMe(id: string, update: ProfileUpdate) {
+  async updateMe(id: string, role: Role, update: ProfileUpdate) {
     const employee = await this.findOrFail(id);
+
+    const changes: ProfileFieldChange[] = [];
+    if (update.phone !== undefined && update.phone !== employee.phone) {
+      changes.push({ field: 'phone', from: employee.phone, to: update.phone });
+    }
+    if (update.photoUrl !== undefined && update.photoUrl !== employee.photoUrl) {
+      changes.push({ field: 'photoUrl', from: employee.photoUrl, to: update.photoUrl });
+    }
+
     Object.assign(employee, update);
-    return toProfile(await this.employees.save(employee));
+    const saved = await this.employees.save(employee);
+
+    this.announce(id, { id, role }, changes);
+    return toProfile(saved);
+  }
+
+  private announce(employeeId: string, changedBy: { id: string; role: Role }, changes: ProfileFieldChange[]) {
+    if (changes.length === 0) return;
+    this.events.announceProfileChanged({
+      eventId: randomUUID(),
+      occurredAt: new Date().toISOString(),
+      employeeId,
+      changedBy,
+      changes,
+    });
   }
 
   async list({ page, pageSize, search }: EmployeeListQuery) {

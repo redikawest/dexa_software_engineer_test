@@ -5,7 +5,7 @@ import { Between, QueryFailedError, Repository } from 'typeorm';
 import { AttendanceRecord, type AttendanceType } from './attendance-record.entity.js';
 import type { AdminAttendanceQuery } from './admin-attendance-query.js';
 import type { DateRange } from './date-range.js';
-import { EmployeeClient } from './employee-client.js';
+import { EmployeeClient } from '@app/clients';
 import { toWorkDate } from './work-date.js';
 
 const UNIQUE_VIOLATION = '23505';

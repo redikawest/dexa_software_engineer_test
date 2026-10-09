@@ -67,6 +67,15 @@ export class EventPublisher implements OnModuleDestroy {
     }
   }
 
+  announceProfileChanged(event: ProfileChangedEvent): void {
+    this.publishProfileChanged(event).catch((error: Error) => {
+      const fields = event.changes.map((change) => change.field).join(', ');
+      this.logger.error(
+        `Could not publish profile change ${event.eventId} (employee ${event.employeeId}, ${fields}): ${error.message}. The change itself was saved.`,
+      );
+    });
+  }
+
   async onModuleDestroy(): Promise<void> {
     await this.connection?.close().catch(() => undefined);
   }

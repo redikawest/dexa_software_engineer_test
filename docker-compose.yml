@@ -71,6 +71,8 @@ services:
       AUTH_SERVICE_URL: http://auth-service:3001
       EMPLOYEE_SERVICE_URL: http://employee-service:3002
       ATTENDANCE_SERVICE_URL: http://attendance-service:3003
+      # Not a startup dependency: the gateway keeps working if the log-service is down.
+      LOG_SERVICE_URL: http://log-service:3004
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
       JWT_PUBLIC_KEY_PATH: /run/secrets/jwt-public.pem
     volumes:
@@ -100,6 +102,8 @@ services:
     restart: unless-stopped
     environment:
       AUTH_SERVICE_PORT: 3001
+      # The service starts, and keeps working, even when the broker is down (see EventPublisher).
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-dexa}:${RABBITMQ_PASSWORD:-dexa_dev_password}@rabbitmq:5672
       JWT_PRIVATE_KEY_PATH: /run/secrets/jwt-private.pem
       JWT_EXPIRES_IN_SECONDS: ${JWT_EXPIRES_IN_SECONDS:-3600}
       DB_HOST: postgres
@@ -129,6 +133,7 @@ services:
     environment:
       EMPLOYEE_SERVICE_PORT: 3002
       AUTH_SERVICE_URL: http://auth-service:3001
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-dexa}:${RABBITMQ_PASSWORD:-dexa_dev_password}@rabbitmq:5672
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: ${POSTGRES_USER:-dexa}
@@ -153,6 +158,7 @@ services:
     restart: unless-stopped
     environment:
       LOG_SERVICE_PORT: 3004
+      EMPLOYEE_SERVICE_URL: http://employee-service:3002
       RABBITMQ_URL: amqp://${RABBITMQ_USER:-dexa}:${RABBITMQ_PASSWORD:-dexa_dev_password}@rabbitmq:5672
       LOGS_DB_HOST: postgres
       LOGS_DB_PORT: 5432

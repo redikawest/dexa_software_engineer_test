@@ -3,7 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { compare, hash, hashSync } from 'bcryptjs';
-import { readJwtSigningConfig } from '@app/config';
+import { readJwtSigningConfig, type Role } from '@app/config';
+import { EventPublisher } from '@app/messaging';
+import { randomUUID } from 'node:crypto';
 import { QueryFailedError, Repository } from 'typeorm';
 import type { CreateLoginInput } from './create-login.js';
 import { EmployeeLogin } from './employee-login.entity.js';
@@ -23,6 +25,7 @@ export class AuthServiceService {
   constructor(
     @InjectRepository(EmployeeLogin) private readonly logins: Repository<EmployeeLogin>,
     private readonly jwt: JwtService,
+    private readonly events: EventPublisher,
     config: ConfigService,
   ) {
     this.expiresIn = readJwtSigningConfig((key) => config.get<string>(key)).expiresInSeconds;
@@ -60,7 +63,7 @@ export class AuthServiceService {
     };
   }
 
-  async changePassword(accountId: string, currentPassword: unknown, newPassword: unknown) {
+  async changePassword(accountId: string, role: Role, currentPassword: unknown, newPassword: unknown) {
     if (typeof currentPassword !== 'string' || !currentPassword || typeof newPassword !== 'string') {
       throw new BadRequestException('currentPassword and newPassword are required');
     }
@@ -82,6 +85,14 @@ export class AuthServiceService {
 
     account.passwordHash = await hash(newPassword, BCRYPT_COST);
     await this.logins.save(account);
+
+    this.events.announceProfileChanged({
+      eventId: randomUUID(),
+      occurredAt: new Date().toISOString(),
+      employeeId: accountId,
+      changedBy: { id: accountId, role },
+      changes: [{ field: 'password' }],
+    });
 
     return { message: 'Password changed' };
   }

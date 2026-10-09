@@ -29,6 +29,12 @@
       "@app/config/*": [
         "./libs/config/src/*"
       ],
+      "@app/clients": [
+        "./libs/clients/src/index.ts"
+      ],
+      "@app/clients/*": [
+        "./libs/clients/src/*"
+      ],
       "@app/messaging": [
         "./libs/messaging/src/index.ts"
       ],

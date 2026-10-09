@@ -9,6 +9,7 @@ export class ApiGatewayService {
   private readonly authClient: AxiosInstance;
   private readonly employeeClient: AxiosInstance;
   private readonly attendanceClient: AxiosInstance;
+  private readonly logClient: AxiosInstance;
 
   constructor(config: ConfigService<Env, true>) {
     this.authClient = axios.create({
@@ -21,6 +22,10 @@ export class ApiGatewayService {
     });
     this.attendanceClient = axios.create({
       baseURL: config.get('ATTENDANCE_SERVICE_URL', { infer: true }),
+      timeout: 5000,
+    });
+    this.logClient = axios.create({
+      baseURL: config.get('LOG_SERVICE_URL', { infer: true }),
       timeout: 5000,
     });
   }
@@ -107,6 +112,18 @@ export class ApiGatewayService {
   clockOut(user: AuthUser) {
     return this.forward('Attendance', () =>
       this.attendanceClient.post('/attendance/clock-out', undefined, { headers: this.identityHeaders(user) }),
+    );
+  }
+
+  listNotifications(user: AuthUser, limit?: string) {
+    return this.forward('Log', () =>
+      this.logClient.get('/notifications', { headers: this.identityHeaders(user), params: { limit } }),
+    );
+  }
+
+  markNotificationsSeen(user: AuthUser, body: unknown) {
+    return this.forward('Log', () =>
+      this.logClient.post('/notifications/seen', body ?? {}, { headers: this.identityHeaders(user) }),
     );
   }
 

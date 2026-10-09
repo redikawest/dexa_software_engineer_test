@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigModule, readDatabaseConfig, toPostgresConnection } from '@app/config';
 import { AttendanceRecord } from './attendance-record.entity.js';
-import { EmployeeClient } from './employee-client.js';
+import { EmployeeClient } from '@app/clients';
 import { AttendanceServiceController } from './attendance-service.controller.js';
 import { AttendanceServiceService } from './attendance-service.service.js';
 
