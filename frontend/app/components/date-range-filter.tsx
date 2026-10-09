@@ -13,10 +13,19 @@ type DateRangeFilterProps = {
   defaultValue: DateRange;
   onChange: (range: DateRange) => void;
   maxDays?: number;
+  defaultLabel?: string;
+  resetLabel?: string;
 };
 
 /** Collapsible period picker. Inputs are kept as a draft until "Apply" is pressed. */
-export function DateRangeFilter({ value, defaultValue, onChange, maxDays }: DateRangeFilterProps) {
+export function DateRangeFilter({
+  value,
+  defaultValue,
+  onChange,
+  maxDays,
+  defaultLabel = "this month",
+  resetLabel = "This month",
+}: DateRangeFilterProps) {
   const [draft, setDraft] = useState(value);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +71,7 @@ export function DateRangeFilter({ value, defaultValue, onChange, maxDays }: Date
           <span className="font-medium">
             {formatDate(value.from)} &ndash; {formatDate(value.to)}
           </span>
-          {isDefault && <span className="ml-2 text-gray-400">(this month)</span>}
+          {isDefault && <span className="ml-2 text-gray-400">({defaultLabel})</span>}
         </span>
         <span className="text-blue-600 group-open:hidden">Change</span>
         <span className="hidden text-blue-600 group-open:inline">Close</span>
@@ -101,7 +110,7 @@ export function DateRangeFilter({ value, defaultValue, onChange, maxDays }: Date
             Apply
           </button>
           <button type="button" onClick={handleReset} className={secondaryButton}>
-            This month
+            {resetLabel}
           </button>
         </div>
       </form>

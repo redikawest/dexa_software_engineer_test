@@ -15,8 +15,11 @@ export type EmployeeList = {
 
 export const EMPLOYEE_PAGE_SIZE = 20;
 
-export function getEmployees(token: string, params: { search?: string; page?: number }): Promise<EmployeeList> {
-  const query = new URLSearchParams({ pageSize: String(EMPLOYEE_PAGE_SIZE) });
+export function getEmployees(
+  token: string,
+  params: { search?: string; page?: number; pageSize?: number },
+): Promise<EmployeeList> {
+  const query = new URLSearchParams({ pageSize: String(params.pageSize ?? EMPLOYEE_PAGE_SIZE) });
   if (params.search) query.set("search", params.search);
   if (params.page && params.page > 1) query.set("page", String(params.page));
   return apiFetch<EmployeeList>(`/admin/employees?${query}`, { token });
