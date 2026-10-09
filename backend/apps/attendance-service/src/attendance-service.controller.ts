@@ -1,7 +1,9 @@
 import { Controller, Get, Post, Query } from '@nestjs/common';
 import { CallerId } from '@app/config';
-import { parseAdminAttendanceQuery } from './admin-attendance-query.js';
-import { parseDateRange } from './date-range.js';
+import { toAdminAttendanceQuery } from './admin-attendance-query.js';
+import { resolveDateRange } from './date-range.js';
+import { AdminAttendanceQueryDto } from './dto/admin-attendance-query.dto.js';
+import { DateRangeQueryDto } from './dto/date-range-query.dto.js';
 import { AttendanceServiceService } from './attendance-service.service.js';
 
 @Controller()
@@ -19,19 +21,13 @@ export class AttendanceServiceController {
   }
 
   @Get('attendance/summary')
-  getSummary(@CallerId() employeeId: string, @Query('from') from?: string, @Query('to') to?: string) {
-    return this.attendanceServiceService.getSummary(employeeId, parseDateRange(from, to));
+  getSummary(@CallerId() employeeId: string, @Query() query: DateRangeQueryDto) {
+    return this.attendanceServiceService.getSummary(employeeId, resolveDateRange(query));
   }
 
   @Get('attendance')
-  listAll(
-    @Query('from') from?: string,
-    @Query('to') to?: string,
-    @Query('employeeId') employeeId?: string,
-    @Query('page') page?: string,
-    @Query('pageSize') pageSize?: string,
-  ) {
-    return this.attendanceServiceService.listAll(parseAdminAttendanceQuery({ from, to, employeeId, page, pageSize }));
+  listAll(@Query() query: AdminAttendanceQueryDto) {
+    return this.attendanceServiceService.listAll(toAdminAttendanceQuery(query));
   }
 
   @Post('attendance/clock-in')
