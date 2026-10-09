@@ -8,10 +8,10 @@ import { EventPublisher } from '@app/messaging';
 import { randomUUID } from 'node:crypto';
 import { QueryFailedError, Repository } from 'typeorm';
 import type { ChangePasswordDto } from './dto/change-password.dto.js';
+import type { LoginDto } from './dto/login.dto.js';
 import type { CreateLoginDto } from './dto/create-login.dto.js';
 import { EmployeeLogin } from './employee-login.entity.js';
 
-const MAX_PASSWORD_LENGTH = 72;
 const BCRYPT_COST = 10;
 const UNIQUE_VIOLATION = '23505';
 const TIMING_HASH = hashSync('timing-equalizer', 10);
@@ -35,15 +35,8 @@ export class AuthServiceService {
     return 'Hello World From Auth Service!';
   }
 
-  async login(email: string, password: string) {
-    if (typeof email !== 'string' || !email.trim() || typeof password !== 'string' || !password) {
-      throw new BadRequestException('Email and password are required');
-    }
-    if (password.length > MAX_PASSWORD_LENGTH) {
-      throw new BadRequestException(`Password must be at most ${MAX_PASSWORD_LENGTH} characters`);
-    }
-
-    const account = await this.logins.findOne({ where: { email: email.trim().toLowerCase() } });
+  async login({ email, password }: LoginDto) {
+    const account = await this.logins.findOne({ where: { email } });
 
     if (!account) {
       await compare(password, TIMING_HASH);

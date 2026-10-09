@@ -2,11 +2,10 @@ import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, P
 import { CallerId, CallerRole, type Role } from '@app/config';
 import type { Response } from 'express';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
+import { LoginDto } from './dto/login.dto.js';
 import { CreateLoginDto } from './dto/create-login.dto.js';
 import { SetLoginActiveDto } from './dto/set-login-active.dto.js';
 import { AuthServiceService } from './auth-service.service.js';
-
-type LoginBody = { email: string; password: string };
 
 @Controller()
 export class AuthServiceController {
@@ -19,8 +18,8 @@ export class AuthServiceController {
 
   @Post('auth/login')
   @HttpCode(200)
-  login(@Body() body: LoginBody) {
-    return this.authServiceService.login(body.email, body.password);
+  login(@Body() body: LoginDto) {
+    return this.authServiceService.login(body);
   }
 
   @Patch('auth/password')
