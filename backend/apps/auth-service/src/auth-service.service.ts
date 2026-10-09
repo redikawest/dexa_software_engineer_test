@@ -7,11 +7,11 @@ import { readJwtSigningConfig, type Role } from '@app/config';
 import { EventPublisher } from '@app/messaging';
 import { randomUUID } from 'node:crypto';
 import { QueryFailedError, Repository } from 'typeorm';
-import type { CreateLoginInput } from './create-login.js';
+import type { ChangePasswordDto } from './dto/change-password.dto.js';
+import type { CreateLoginDto } from './dto/create-login.dto.js';
 import { EmployeeLogin } from './employee-login.entity.js';
 
 const MAX_PASSWORD_LENGTH = 72;
-const MIN_NEW_PASSWORD_LENGTH = 8;
 const BCRYPT_COST = 10;
 const UNIQUE_VIOLATION = '23505';
 const TIMING_HASH = hashSync('timing-equalizer', 10);
@@ -63,15 +63,7 @@ export class AuthServiceService {
     };
   }
 
-  async changePassword(accountId: string, role: Role, currentPassword: unknown, newPassword: unknown) {
-    if (typeof currentPassword !== 'string' || !currentPassword || typeof newPassword !== 'string') {
-      throw new BadRequestException('currentPassword and newPassword are required');
-    }
-    if (newPassword.length < MIN_NEW_PASSWORD_LENGTH || Buffer.byteLength(newPassword) > MAX_PASSWORD_LENGTH) {
-      throw new BadRequestException(
-        `New password must be ${MIN_NEW_PASSWORD_LENGTH} to ${MAX_PASSWORD_LENGTH} characters`,
-      );
-    }
+  async changePassword(accountId: string, role: Role, { currentPassword, newPassword }: ChangePasswordDto) {
     if (newPassword === currentPassword) {
       throw new BadRequestException('New password must be different from the current password');
     }
@@ -97,7 +89,7 @@ export class AuthServiceService {
     return { message: 'Password changed' };
   }
 
-  async createLogin({ id, email, password }: CreateLoginInput) {
+  async createLogin({ id, email, password }: CreateLoginDto) {
     const login = this.logins.create({
       id,
       email,

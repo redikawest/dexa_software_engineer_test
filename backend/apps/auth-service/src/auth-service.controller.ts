@@ -1,11 +1,12 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Res } from '@nestjs/common';
 import { CallerId, CallerRole, type Role } from '@app/config';
 import type { Response } from 'express';
-import { parseCreateLogin } from './create-login.js';
+import { ChangePasswordDto } from './dto/change-password.dto.js';
+import { CreateLoginDto } from './dto/create-login.dto.js';
+import { SetLoginActiveDto } from './dto/set-login-active.dto.js';
 import { AuthServiceService } from './auth-service.service.js';
 
 type LoginBody = { email: string; password: string };
-type ChangePasswordBody = { currentPassword?: unknown; newPassword?: unknown };
 
 @Controller()
 export class AuthServiceController {
@@ -23,20 +24,19 @@ export class AuthServiceController {
   }
 
   @Patch('auth/password')
-  changePassword(@CallerId() accountId: string, @CallerRole() role: Role, @Body() body: ChangePasswordBody) {
-    return this.authServiceService.changePassword(accountId, role, body?.currentPassword, body?.newPassword);
+  changePassword(@CallerId() accountId: string, @CallerRole() role: Role, @Body() body: ChangePasswordDto) {
+    return this.authServiceService.changePassword(accountId, role, body);
   }
 
   @Post('internal/logins')
-  async createLogin(@Body() body: unknown, @Res({ passthrough: true }) res: Response) {
-    const { created, login } = await this.authServiceService.createLogin(parseCreateLogin(body));
+  async createLogin(@Body() body: CreateLoginDto, @Res({ passthrough: true }) res: Response) {
+    const { created, login } = await this.authServiceService.createLogin(body);
     res.status(created ? 201 : 200);
     return login;
   }
 
   @Patch('internal/logins/:id')
-  setLoginActive(@Param('id', new ParseUUIDPipe()) id: string, @Body() body: { isActive?: unknown }) {
-    if (typeof body?.isActive !== 'boolean') throw new BadRequestException('isActive must be true or false');
+  setLoginActive(@Param('id', new ParseUUIDPipe()) id: string, @Body() body: SetLoginActiveDto) {
     return this.authServiceService.setLoginActive(id, body.isActive);
   }
 
