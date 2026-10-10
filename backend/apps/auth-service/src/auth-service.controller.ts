@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Res } from '@nestjs/common';
+import { Body, Controller, Delete, HttpCode, Param, ParseUUIDPipe, Patch, Post, Res } from '@nestjs/common';
 import { CallerId, CallerRole, type Role } from '@app/config';
 import type { Response } from 'express';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
@@ -10,11 +10,6 @@ import { AuthServiceService } from './auth-service.service.js';
 @Controller()
 export class AuthServiceController {
   constructor(private readonly authServiceService: AuthServiceService) {}
-
-  @Get()
-  getHello(): string {
-    return this.authServiceService.getHello();
-  }
 
   @Post('auth/login')
   @HttpCode(200)

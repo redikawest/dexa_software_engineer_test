@@ -30,10 +30,6 @@ export class EmployeeServiceService {
     private readonly events: EventPublisher,
   ) {}
 
-  getHello(): string {
-    return 'Hello World From Employee Service!';
-  }
-
   async getMe(id: string) {
     return toProfile(await this.findOrFail(id));
   }

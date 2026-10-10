@@ -39,10 +39,6 @@ export class ApiGatewayService {
     });
   }
 
-  getHello(): string {
-    return 'Hello World From Api Gateway Service!';
-  }
-
   login(body: LoginBody) {
     return this.forward('Auth', () => this.authClient.post('/auth/login', body ?? {}));
   }

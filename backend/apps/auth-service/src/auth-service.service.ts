@@ -31,10 +31,6 @@ export class AuthServiceService {
     this.expiresIn = readJwtSigningConfig((key) => config.get<string>(key)).expiresInSeconds;
   }
 
-  getHello(): string {
-    return 'Hello World From Auth Service!';
-  }
-
   async login({ email, password }: LoginDto) {
     const account = await this.logins.findOne({ where: { email } });
 

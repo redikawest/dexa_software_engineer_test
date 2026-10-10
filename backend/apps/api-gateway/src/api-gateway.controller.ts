@@ -12,7 +12,6 @@ import {
 } from './docs/attendance.docs.js';
 import { ChangePasswordDocs, LoginDocs } from './docs/auth.docs.js';
 import { GetMyProfileDocs, UpdateMyProfileDocs } from './docs/employee.docs.js';
-import { HealthDocs } from './docs/health.docs.js';
 import { ListNotificationsDocs, MarkNotificationsSeenDocs } from './docs/notification.docs.js';
 import { ChangePasswordBody, LoginBody } from './types/auth.js';
 import { CreateEmployeeBody, UpdateEmployeeBody, UpdateMyProfileBody } from './types/employee.js';
@@ -21,13 +20,6 @@ import { MarkSeenBody } from './types/notification.js';
 @Controller()
 export class ApiGatewayController {
   constructor(private readonly apiGatewayService: ApiGatewayService) {}
-
-  @HealthDocs()
-  @Public()
-  @Get()
-  getHello(): string {
-    return this.apiGatewayService.getHello();
-  }
 
   @LoginDocs()
   @Public()

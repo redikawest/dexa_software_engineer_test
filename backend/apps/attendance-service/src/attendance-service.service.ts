@@ -17,10 +17,6 @@ export class AttendanceServiceService {
     private readonly employees: EmployeeClient,
   ) {}
 
-  getHello(): string {
-    return 'Hello World From Attendance Service!';
-  }
-
   clockIn(employeeId: string) {
     return this.record(employeeId, 'CLOCK_IN', 'You have already clocked in today');
   }

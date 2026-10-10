@@ -10,11 +10,6 @@ import { AttendanceServiceService } from './attendance-service.service.js';
 export class AttendanceServiceController {
   constructor(private readonly attendanceServiceService: AttendanceServiceService) {}
 
-  @Get()
-  getHello(): string {
-    return this.attendanceServiceService.getHello();
-  }
-
   @Get('attendance/today')
   getToday(@CallerId() employeeId: string) {
     return this.attendanceServiceService.getToday(employeeId);
