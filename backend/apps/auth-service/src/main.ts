@@ -1,12 +1,12 @@
-import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from '@app/config';
 import { AuthServiceModule } from './auth-service.module.js';
+import { configureApp } from './setup-app.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AuthServiceModule);
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, stopAtFirstError: true }));
+  configureApp(app);
   const config = app.get<ConfigService<Env, true>>(ConfigService);
   await app.listen(config.get('AUTH_SERVICE_PORT', { infer: true }));
 }

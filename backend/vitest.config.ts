@@ -1,9 +1,9 @@
 import { defineConfig } from 'vitest/config';
+import { readAliases } from './test/aliases.js';
 
 export default defineConfig({
-  // Resolves the path aliases declared in tsconfig.json, including the ones
-  // added by `nest g library`.
-  resolve: { tsconfigPaths: true },
+  resolve: { alias: readAliases() },
+  oxc: { decorator: { legacy: true, emitDecoratorMetadata: true } },
   test: {
     globals: true,
     root: './',

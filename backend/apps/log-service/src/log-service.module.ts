@@ -5,7 +5,6 @@ import { EmployeeClient } from '@app/clients';
 import { AppConfigModule, readDatabaseConfig, toPostgresConnection } from '@app/config';
 import { AdminNotificationState } from './admin-notification-state.entity.js';
 import { AuditLogService } from './audit-log.service.js';
-import { LogServiceController } from './log-service.controller.js';
 import { NotificationController } from './notification.controller.js';
 import { Notification } from './notification.entity.js';
 import { NotificationService } from './notification.service.js';
@@ -28,7 +27,7 @@ import { ProfileEventsConsumer } from './profile-events.consumer.js';
     }),
     TypeOrmModule.forFeature([ProfileChangeLog, Notification, AdminNotificationState]),
   ],
-  controllers: [LogServiceController, NotificationController],
+  controllers: [NotificationController],
   providers: [AuditLogService, NotificationService, EmployeeClient, ProfileEventsConsumer],
 })
 export class LogServiceModule {}
